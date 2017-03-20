@@ -1,4 +1,4 @@
-# Amit ar algoritmus megvalósít:
+# Amit az algoritmus megvalósít:
 # Egy négyzetet tud elemezni és annak indexét paraméterként kapja. Összeállít egy átlagos novemberi napot az adott négyzeten. Egy görbe, amit egy regresszor hoz létre, lesz az átlagos nap.
 # - Végigmegy a training data összes napjának adott négyzetén és minden timestampre csinál egy targetet (nevezzük activitynek). Úgy hozza létre a activityt, hogy veszi az SMS in/out és call in/out adatok (tehát 4 különböző, de összehasonlítható) átlagát.
 # - Kirajzolja ezeket az értékeket.
@@ -11,7 +11,7 @@
 # - Az SVR helyett már regresszort is kipróbálni.
 
 # TODO Hova tovább:
-# - Tesztelni az egészet a decemberi adatokon-
+# - Tesztelni az egészet a decemberi adatokon.
 
 # TODO Kérdések:
 # - A country code-al érdemes lenne foglalkozni? Jelenleg kidobom.
@@ -28,73 +28,80 @@ from sklearn.svm import SVR
 
 # parse the arguments
 parser = ArgumentParser(description='The machine learning algorithm for the anomaly detector.')
-parser.add_argument('-t','--training', help='Path to the root directory of the training data.', required=True)
+parser.add_argument('--training', help='Path to the root directory of the training dataset.', required=True)
+parser.add_argument('--testing', help='Path to the root directory of the testing dataset.', required=True)
 parser.add_argument('-s','--square', type=int, help='The square to analyze.', required=True)
 args = vars(parser.parse_args())
 trainingFilesRoot = args['training']
+testingFilesRoot = args['testing']
 square = args['square']
 
-# list the training files
-trainingFiles = []
-for (dirPath, dirNames, fileNames) in walk(trainingFilesRoot):
-    trainingFiles.extend([join(dirPath, fileName) for fileName in fileNames])
-print('Training files:')
-print('\n'.join(trainingFiles))
+# preprocess the dataset under the given root and return the features and the targets
+def preprocessDataset(datasetRoot, isTesting=False):
+    startTime = time()
 
-# walk through the files and read the data for the given square
-start_time = time()
-fieldNames=('square-id', 'time-interval', 'country-code', 'sms-in', 'sms-out', 'call-in', 'call-out', 'internet-traffic')
-trainingData = []
-for trainingFile in trainingFiles:
-    with open(trainingFile) as tsvFile:
-        tsvReader = DictReader(tsvFile, delimiter='\t', fieldnames=fieldNames)
-        for row in tsvReader:
-            if int(row['square-id']) == square:
-                trainingData.append(row)
-            elif int(row['square-id']) > square: # assume that the square id is increasing in each file
-                break
-print('Reading time:', round(time() - start_time, 3), ' sec')
+    # collect the dataset's files
+    datasetFiles = []
+    for (dirPath, dirNames, fileNames) in walk(datasetRoot):
+        datasetFiles.extend([join(dirPath, fileName) for fileName in fileNames])
 
-# drop country code and the internet traffic and aggregate the rest
-start_time = time()
-cleanData = {}
-for row in trainingData:
-    if row['time-interval'] in cleanData:
-        for key in cleanData[row['time-interval']]:
-            cleanData[row['time-interval']][key] += float(row[key]) if row[key] != '' else float(0)
-    else:
-        cleanData[row['time-interval']] = {
-            'sms-in' : float(row['sms-in']) if row['sms-in'] != '' else float(0),
-            'sms-out' : float(row['sms-out']) if row['sms-out'] != '' else float(0),
-            'call-in' : float(row['call-in']) if row['call-in'] != '' else float(0),
-            'call-out' : float(row['call-out']) if row['call-out'] != '' else float(0)
-        }
-print('Cleaning time:', round(time() - start_time, 3), ' sec')
+    # walk through the dataset's files and read the data for the given square
+    fieldNames=('square_id', 'time_interval', 'country_code', 'sms_in', 'sms_out', 'call_in', 'call_out', 'internet_traffic')
+    rawData = []
+    for datasetFile in datasetFiles:
+        with open(datasetFile) as tsvFile:
+            tsvReader = DictReader(tsvFile, delimiter='\t', fieldnames=fieldNames)
+            for row in tsvReader:
+                if int(row['square_id']) == square:
+                    rawData.append(row)
+                elif int(row['square_id']) > square: # assume that the square id is increasing in each file
+                    break
 
-# collect the features and the targets in arrays. aggregate all the targets into one
-start_time = time()
-featuresForTraining = np.array([])
-targetsForTraining = np.array([])
-for timestamp, targets in cleanData.items():
-    date = datetime.fromtimestamp(float(timestamp) / 1000.0)
-    featuresForTraining = np.append(featuresForTraining, 60 * date.hour + date.minute)
+    # drop country code and the internet traffic and aggregate the rest
+    cleanData = {}
+    for row in rawData:
+        if row['time_interval'] in cleanData:
+            for key in cleanData[row['time_interval']]:
+                cleanData[row['time_interval']][key] += float(row[key]) if row[key] != '' else float(0)
+        else:
+            cleanData[row['time_interval']] = {
+                'sms_in' : float(row['sms_in']) if row['sms_in'] != '' else float(0),
+                'sms_out' : float(row['sms_out']) if row['sms_out'] != '' else float(0),
+                'call_in' : float(row['call_in']) if row['call_in'] != '' else float(0),
+                'call_out' : float(row['call_out']) if row['call_out'] != '' else float(0)
+            }
 
-    numOfValidData = float(0)
-    for target in targets:
-        if target != 0:
-            numOfValidData += 1
-    aggregatedTargets = (targets['sms-in'] + targets['sms-out'] + targets['call-in'] + targets['call-out']) / numOfValidData if numOfValidData != 0 else 0
-    targetsForTraining = np.append(targetsForTraining, aggregatedTargets)
+    # collect the features and the targets
+    features = np.array([])
+    targets = np.array([])
+    for timestamp, properties in cleanData.items():
+        date = datetime.fromtimestamp(float(timestamp) / 1000.0)
+        minutes = 60 * date.hour + date.minute
+        if isTesting:
+            minutes += 24 * 60 * (date.day - 1)
+        features = np.append(features, minutes)
+        average = (properties['sms_in'] + properties['sms_out'] + properties['call_in'] + properties['call_out']) / 4
+        targets = np.append(targets, average)
 
-order = np.argsort(featuresForTraining)
-featuresForTraining = np.array(featuresForTraining)[order]
-targetsForTraining = np.array(targetsForTraining)[order]
+    # sort the arrays by the timestamp
+    order = np.argsort(features)
+    features = np.array(features)[order]
+    targets = np.array(targets)[order]
 
-featuresForTraining = featuresForTraining.reshape(-1, 1)
+    features = features.reshape(-1, 1) # required by sklearn
 
-print('Aggregating time:', round(time() - start_time, 3), ' sec')
-print('Targets: ', targetsForTraining)
-print('Features: ', featuresForTraining)
+    print('Time for preprocess a dataset:', round(time() - startTime, 3), ' sec')
+    return targets, features
+
+# preprocess the training dataset
+targetsForTraining, featuresForTraining = preprocessDataset(trainingFilesRoot)
+print('Targets for training: ', targetsForTraining)
+print('Features for training: ', featuresForTraining)
+
+# preprocess the testing dataset
+targetsForTesting, featuresForTesting = preprocessDataset(testingFilesRoot, isTesting=True)
+print('Targets for testing: ', targetsForTesting)
+print('Features for testing: ', featuresForTesting)
 
 # train the model
 start_time = time()
@@ -102,7 +109,7 @@ model = SVR(kernel='rbf')
 model = model.fit(featuresForTraining, targetsForTraining)
 print('Training time:', round(time() - start_time, 3), ' sec')
 
-# predict the model to the training data
+# create the regression line
 start_time = time()
 regressionLine = model.predict(featuresForTraining)
 print('Prediction time:', round(time() - start_time, 3), ' sec')
