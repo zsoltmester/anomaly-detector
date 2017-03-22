@@ -8,10 +8,7 @@
 # - Ahelyett, hogy az összes feture-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
 # - Kiszűrni a training databól az outlinerket, hisz egy átlagos napot akarunk megkapni.
 # - Parameter optimizerel a paramétereit a modelnek a legjobbra lőni.
-# - Az SVR helyett már regresszort is kipróbálni.
-
-# TODO Hova tovább:
-# - Tesztelni az egészet a decemberi adatokon.
+# - Az SVR helyett más regresszort is kipróbálni.
 
 # TODO Kérdések:
 # - A country code-al érdemes lenne foglalkozni? Jelenleg kidobom.
@@ -90,7 +87,7 @@ def preprocessDataset(datasetRoot, isTesting=False):
 
     features = features.reshape(-1, 1) # required by sklearn
 
-    print('Time for preprocess a dataset:', round(time() - startTime, 3), ' sec')
+    print('Time for preprocess a dataset: ', round(time() - startTime, 3), ' sec')
     return targets, features
 
 # preprocess the training dataset
@@ -103,24 +100,46 @@ targetsForTesting, featuresForTesting = preprocessDataset(testingFilesRoot, isTe
 print('Targets for testing: ', targetsForTesting)
 print('Features for testing: ', featuresForTesting)
 
-# train the model
-start_time = time()
-model = SVR(kernel='rbf')
-model = model.fit(featuresForTraining, targetsForTraining)
-print('Training time:', round(time() - start_time, 3), ' sec')
-
 # create the regression line
-start_time = time()
-regressionLine = model.predict(featuresForTraining)
-print('Prediction time:', round(time() - start_time, 3), ' sec')
+def createRegressionLine(features, targets):
+    start_time = time()
+    model = SVR(kernel='rbf')
+    model = model.fit(features, targets)
+    line = model.predict(features)
+    score = model.score(features, targets)
+    print('Create regression line time: ', round(time() - start_time, 3), ' sec')
+    return line, score
 
-# draw the training data
-start_time = time()
-plot.scatter(featuresForTraining, targetsForTraining, color='g', label='data')
-plot.plot(featuresForTraining, regressionLine, color='r', label='regression line')
-plot.xlabel('time in minutes')
-plot.ylabel('activity')
-plot.title('The Average Day in November')
-plot.legend()
-print('Drawing time:', round(time() - start_time, 3), ' sec')
-plot.show()
+# create the regression line based on the training data
+regressionLine, regressionLineScore = createRegressionLine(featuresForTraining, targetsForTraining)
+
+# draw the day's data into the plot and show it
+def drawDayIntoThePlotAndShow(day, dayFeatures, dayTargets):
+    dayRegressionLine, dayRegressionLineScore = createRegressionLine(dayFeatures, dayTargets)
+    plot.scatter(featuresForTraining, targetsForTraining, color='0.8', label='training data')
+    plot.plot(featuresForTraining, regressionLine, color='b', label=('trained regression line (' + str(regressionLineScore) + ')'))
+    plot.scatter(dayFeatures, dayTargets, color='k', label='day data')
+    plot.plot(dayFeatures, dayRegressionLine, color='r', label='current day regression line (' + str(dayRegressionLineScore) + ')')
+    plot.xlabel('time in minutes')
+    plot.ylabel('activity')
+    plot.title('The Average Day in November vs day ' + str(day) + ' in December')
+    plot.legend()
+    plot.show()
+
+# walk through each day in the testing dataset and draw the regression line
+currentDayFeatures = None
+currentDayTargets = None
+currentDay = 0
+for index, minutes in enumerate(featuresForTesting):
+    day = int(int(minutes[0]) / int(24 * 60) + 1)
+    if currentDay < day: # if we collected all data for a day (assume that the minutes are in ascending order)
+        if currentDay > 0: # skip day zero
+            currentDayFeatures = currentDayFeatures.reshape(-1, 1) # required by sklearn
+            drawDayIntoThePlotAndShow(currentDay, currentDayFeatures, currentDayTargets)
+        # prepare for the new day
+        currentDay = day
+        currentDayFeatures = np.array([])
+        currentDayTargets = np.array([])
+    # collect the day's data
+    currentDayFeatures = np.append(currentDayFeatures, minutes[0] - (day - 1) * 24 * 60)
+    currentDayTargets = np.append(currentDayTargets, targetsForTesting[index])
