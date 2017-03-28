@@ -4,11 +4,11 @@
 # - Kirajzolja ezeket az értékeket.
 
 # TODO Hogyan kéne még fejleszteni a tranininget:
-# - Használni az internet trafficot is, mint targetet (beleszámolni az activitybe, mint a többi adatot). Ehhez már kell a feature scaling, mert az internet traffic nem összehasonlítható a többivel.
 # - Kiszűrni a training databól az outlinerket, hisz egy átlagos napot akarunk megkapni.
 # - A munkanapot és a hétvégét különválasztani.
 # - A country code segítségével csinálni egy új feature-t.
-# - Ahelyett, hogy az összes feture-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
+# - Ahelyett, hogy az összes feature-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
+# - PCA-t használni.
 # - Az SVR helyett más regresszort is kipróbálni. Parameter optimizerel a paramétereit a legjobbra lőni. Regresszor helyett egyszerű átlagolást is kipróbálni.
 
 from argparse import ArgumentParser
@@ -20,6 +20,7 @@ from datetime import datetime
 import matplotlib.pyplot as plot
 import numpy as np
 from sklearn.svm import SVR
+from sklearn.preprocessing import MinMaxScaler
 
 # parse the arguments
 parser = ArgumentParser(description='The machine learning algorithm for the anomaly detector.')
@@ -63,20 +64,33 @@ def preprocessDataset(datasetRoot, isTesting=False):
                 'sms_in' : float(row['sms_in']) if row['sms_in'] != '' else float(0),
                 'sms_out' : float(row['sms_out']) if row['sms_out'] != '' else float(0),
                 'call_in' : float(row['call_in']) if row['call_in'] != '' else float(0),
-                'call_out' : float(row['call_out']) if row['call_out'] != '' else float(0)
+                'call_out' : float(row['call_out']) if row['call_out'] != '' else float(0),
+                'internet_traffic' : float(row['internet_traffic']) if row['internet_traffic'] != '' else float(0)
             }
 
     # collect the features and the targets
     features = np.array([])
-    targets = np.array([])
+    targets = None
     for timestamp, properties in cleanData.items():
         date = datetime.fromtimestamp(float(timestamp) / 1000.0)
         minutes = 60 * date.hour + date.minute
         if isTesting:
             minutes += 24 * 60 * (date.day - 1)
         features = np.append(features, minutes)
-        average = (properties['sms_in'] + properties['sms_out'] + properties['call_in'] + properties['call_out']) / 4
-        targets = np.append(targets, average)
+        newTargetsRow = [properties['sms_in'], properties['sms_out'], properties['call_in'], properties['call_out'], properties['internet_traffic']]
+        if targets is None:
+            targets = np.array(newTargetsRow)
+        else:
+            targets = np.vstack([targets, newTargetsRow])
+
+    # scale the targets into (0,1)
+    targets = MinMaxScaler().fit_transform(targets)
+
+    # reduce the targets to 1, by calculate the average of each row
+    reducedTargets = np.array([])
+    for row in targets:
+        reducedTargets = np.append(reducedTargets, np.average(row))
+    targets = reducedTargets
 
     # sort the arrays by the timestamp
     order = np.argsort(features)
