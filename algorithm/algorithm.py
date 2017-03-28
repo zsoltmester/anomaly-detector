@@ -5,13 +5,11 @@
 
 # TODO Hogyan kéne még fejleszteni a tranininget:
 # - Használni az internet trafficot is, mint targetet (beleszámolni az activitybe, mint a többi adatot). Ehhez már kell a feature scaling, mert az internet traffic nem összehasonlítható a többivel.
-# - Ahelyett, hogy az összes feture-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
 # - Kiszűrni a training databól az outlinerket, hisz egy átlagos napot akarunk megkapni.
-# - Parameter optimizerel a paramétereit a modelnek a legjobbra lőni.
-# - Az SVR helyett más regresszort is kipróbálni.
-
-# TODO Kérdések:
-# - A country code-al érdemes lenne foglalkozni? Jelenleg kidobom.
+# - A munkanapot és a hétvégét különválasztani.
+# - A country code segítségével csinálni egy új feature-t.
+# - Ahelyett, hogy az összes feture-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
+# - Az SVR helyett más regresszort is kipróbálni. Parameter optimizerel a paramétereit a legjobbra lőni. Regresszor helyett egyszerű átlagolást is kipróbálni.
 
 from argparse import ArgumentParser
 from os import walk
