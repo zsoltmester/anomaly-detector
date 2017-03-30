@@ -21,6 +21,8 @@ import matplotlib.pyplot as plot
 import numpy as np
 from sklearn.svm import SVR
 from sklearn.preprocessing import MinMaxScaler
+from scipy.interpolate import interp1d
+from scipy import interpolate
 
 # parse the arguments
 parser = ArgumentParser(description='The machine learning algorithm for the anomaly detector.')
@@ -127,6 +129,18 @@ regressionLine, regressionLineScore = createRegressionLine(featuresForTraining, 
 
 # draw the day's data into the plot and show it
 def drawDayIntoThePlotAndShow(day, dayFeatures, dayTargets):
+    dayFeaturesForInterpolation = dayFeatures.ravel();
+    dayTargetsForInterpolation = dayTargets.ravel();
+
+    #interpolated = interp1d(dayFeaturesForInterpolation, dayTargetsForInterpolation, kind='quadratic')
+    #xnew = np.linspace(np.amin(dayFeaturesForInterpolation), np.amax(dayFeaturesForInterpolation), 1440, endpoint=True)
+    #plot.plot(dayFeaturesForInterpolation, dayTargetsForInterpolation, 'o', xnew, interpolated(xnew))
+
+    interpolated = interpolate.splrep(dayFeaturesForInterpolation, dayTargetsForInterpolation)
+    xnew = np.linspace(np.amin(dayFeaturesForInterpolation), np.amax(dayFeaturesForInterpolation), 1440, endpoint=True)
+    ynew = interpolate.splev(xnew, interpolated, der=0)
+    plot.plot(dayFeaturesForInterpolation, dayTargetsForInterpolation, 'o', xnew, ynew)
+
     dayRegressionLine, dayRegressionLineScore = createRegressionLine(dayFeatures, dayTargets)
     plot.scatter(featuresForTraining, targetsForTraining, color='0.8', label='training data')
     plot.plot(featuresForTraining, regressionLine, color='b', label=('trained regression line (' + str(regressionLineScore) + ')'))
