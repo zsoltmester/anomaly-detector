@@ -111,21 +111,39 @@ xTesting, yTesting = preprocessDataset(testingFilesRoot, isTesting=True)
 # create a interpolation polynomial based on the given x and y values
 def createInterpolationPolynomial(x, y):
     startTime = time()
-    interpolationPolynomial = splrep(x, y, k=SPLINE_DEGREE) # TODO kivezetni paraméterbe az összes többit
+    interpolationPolynomial = splrep(x, y, k=SPLINE_DEGREE)
     x = np.linspace(np.amin(x), np.amax(x), SPLINE_X_SAMPLES)
     y = splev(x, interpolationPolynomial)
     print('Create interpolation polynomial time: ', round(time() - startTime, 3), ' sec')
     return x, y
 
+# remove the duplicates from the xTraining
+xTrainingUnique = np.unique(xTraining)
+
+# create the average y value for each timestamp in the traning dataset
+yTrainingAverage = np.array([])
+currentTimstamp = 0
+yCurrentValues = np.array([])
+for index, timestamp in enumerate(xTraining):
+    if currentTimstamp < timestamp:
+        # add the average of the collected y values
+        yTrainingAverage = np.append(yTrainingAverage, np.average(yCurrentValues))
+        # prepare for the new timestamp
+        currentTimstamp = timestamp
+        yCurrentValues = np.array([])
+    yCurrentValues = np.append(yCurrentValues, yTraining[index])
+yTrainingAverage = np.append(yTrainingAverage, np.average(yCurrentValues))
+
 # create the interpolation polynomial based on the training data
-xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial = createInterpolationPolynomial(xTraining, yTraining)
+xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial = createInterpolationPolynomial(xTrainingUnique, yTrainingAverage)
 
 # show the given day's data and the November's avarage data in a plot
 def showPlotForDay(day, xDay, yDay):
-    plot.scatter(xTraining, yTraining, color='0.8', label='data points for November')
-    plot.plot(xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial, color='blue', label='interpolation polynomial for November')
+    plot.scatter(xTraining, yTraining, color='silver', label='data points for November')
+    plot.scatter(xTrainingUnique, yTrainingAverage, color='gray', label='avarage data points for November')
+    plot.plot(xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial, color='black', label='interpolation polynomial for November')
 
-    plot.scatter(xDay, yDay, color='black', label='data points for December '+str(day))
+    plot.scatter(xDay, yDay, color='salmon', label='data points for December '+str(day))
     xDayInterpolationPolynomial, yDayInterpolationPolynomial = createInterpolationPolynomial(xDay, yDay)
     plot.plot(xDayInterpolationPolynomial, yDayInterpolationPolynomial, color='red', label='interpolation polynomial for December '+str(day))
 
