@@ -54,7 +54,7 @@ def preprocessDataset(datasetRoot, isTesting=False):
             for row in tsvReader:
                 if int(row['square_id']) == square:
                     rawData.append(row)
-                elif int(row['square_id']) > square: # assume that the square id is increasing in each file
+                elif int(row['square_id']) >= square: # assume that the square id is increasing in each file
                     break
 
     # create the data dictionary, where the keys are the time intervals and the values are the dictinary with the data. also we drop the country code
