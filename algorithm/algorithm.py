@@ -24,17 +24,17 @@ MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
 # parameters
 SPLINE_DEGREE = 3
 SPLINE_X_SAMPLES = 1440
-OUTLIER_CONTROLL = 2
+OUTLIER_CONTROL = 2
 
 # parse the arguments
 parser = ArgumentParser(description='The machine learning algorithm for the anomaly detector application.')
 parser.add_argument('--training', help='Path to the root directory of the training dataset.', required=True)
 parser.add_argument('--testing', help='Path to the root directory of the testing dataset.', required=True)
-parser.add_argument('-s','--square', type=int, help='The square to analyze.', required=True)
+parser.add_argument('-s','--squares', type=int, help='The number of square to analyze.', required=True)
 args = vars(parser.parse_args())
 trainingFilesRoot = args['training']
 testingFilesRoot = args['testing']
-square = args['square']
+squares = args['squares']
 
 # preprocess the dataset under the given root and return the x and the y values
 def preprocessDataset(datasetRoot, isTesting=False):
@@ -45,17 +45,22 @@ def preprocessDataset(datasetRoot, isTesting=False):
     for (dirPath, dirNames, fileNames) in walk(datasetRoot):
         datasetFiles.extend([join(dirPath, fileName) for fileName in fileNames])
 
-    # walk through the dataset's files and read the data for the given square
+    # walk through the dataset's files and read the data for the given number of squares
     fieldNames=('square_id', 'time_interval', 'country_code', 'sms_in', 'sms_out', 'call_in', 'call_out', 'internet_traffic')
     rawData = []
     for datasetFile in datasetFiles:
         with open(datasetFile) as tsvFile:
             tsvReader = DictReader(tsvFile, delimiter='\t', fieldnames=fieldNames)
+            lastSquareId = -1
+            counter = -1
             for row in tsvReader:
-                if int(row['square_id']) == square:
-                    rawData.append(row)
-                elif int(row['square_id']) >= square: # assume that the square id is increasing in each file
-                    break
+                if lastSquareId != int(row['square_id']): # assume that the values for a square are groupped together
+                    counter += 1
+                    if counter < squares:
+                        lastSquareId = int(row['square_id'])
+                    else:
+                        break
+                rawData.append(row)
 
     # create the data dictionary, where the keys are the time intervals and the values are the dictinary with the data. also we drop the country code
     cleanData = {}
@@ -111,11 +116,9 @@ xTesting, yTesting = preprocessDataset(testingFilesRoot, isTesting=True)
 
 # create a interpolation polynomial based on the given x and y values
 def createInterpolationPolynomial(x, y):
-    startTime = time()
     interpolationPolynomial = splrep(x, y, k=SPLINE_DEGREE)
     x = np.linspace(np.amin(x), np.amax(x), SPLINE_X_SAMPLES)
     y = splev(x, interpolationPolynomial)
-    print('Create interpolation polynomial time: ', round(time() - startTime, 3), ' sec')
     return x, y
 
 # remove the duplicates from the xTraining
@@ -125,7 +128,7 @@ xTrainingUnique = np.unique(xTraining)
 def dropOutliers(dataset):
     difference = abs(dataset - np.mean(dataset))
     standardDeviation = np.std(dataset)
-    maxAllowedDifference = OUTLIER_CONTROLL * standardDeviation
+    maxAllowedDifference = OUTLIER_CONTROL * standardDeviation
     return dataset[difference < maxAllowedDifference]
 
 # create the average y value for each timestamp in the traning dataset
