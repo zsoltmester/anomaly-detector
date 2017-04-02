@@ -1,21 +1,21 @@
 # TODO Hogyan kéne még fejleszteni a tranininget:
-# - Kiszűrni a training databól az outlinerket, hisz egy átlagos napot akarunk megkapni.
 # - A munkanapot és a hétvégét különválasztani.
 # - A country code segítségével csinálni egy új feature-t.
 # - Ahelyett, hogy az összes feature-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
 # - PCA-t használni.
 
-from argparse import ArgumentParser
-from os import walk
-from os.path import join
-from csv import DictReader
-from time import time
-from datetime import datetime
 import matplotlib.pyplot as plot
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-from scipy.interpolate import splrep
+
+from argparse import ArgumentParser
+from csv import DictReader
+from datetime import datetime
+from os import walk
+from os.path import join
 from scipy.interpolate import splev
+from scipy.interpolate import splrep
+from sklearn.preprocessing import MinMaxScaler
+from time import time
 
 # constants
 MINUTES_PER_HOUR = 60
@@ -23,7 +23,8 @@ MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
 
 # parameters
 SPLINE_DEGREE = 3
-SPLINE_X_SAMPLES = 144
+SPLINE_X_SAMPLES = 1440
+OUTLIER_CONTROLL = 2
 
 # parse the arguments
 parser = ArgumentParser(description='The machine learning algorithm for the anomaly detector application.')
@@ -120,6 +121,13 @@ def createInterpolationPolynomial(x, y):
 # remove the duplicates from the xTraining
 xTrainingUnique = np.unique(xTraining)
 
+# drop the outliers from the given dataset
+def dropOutliers(dataset):
+    difference = abs(dataset - np.mean(dataset))
+    standardDeviation = np.std(dataset)
+    maxAllowedDifference = OUTLIER_CONTROLL * standardDeviation
+    return dataset[difference < maxAllowedDifference]
+
 # create the average y value for each timestamp in the traning dataset
 yTrainingAverage = np.array([])
 currentTimstamp = 0
@@ -127,7 +135,8 @@ yCurrentValues = np.array([])
 for index, timestamp in enumerate(xTraining):
     if currentTimstamp < timestamp:
         # add the average of the collected y values
-        yTrainingAverage = np.append(yTrainingAverage, np.average(yCurrentValues))
+        yCurrentValues = dropOutliers(yCurrentValues)
+        yTrainingAverage = np.append(yTrainingAverage, np.mean(yCurrentValues))
         # prepare for the new timestamp
         currentTimstamp = timestamp
         yCurrentValues = np.array([])
