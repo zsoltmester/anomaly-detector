@@ -1,8 +1,3 @@
-# Amit az algoritmus megvalósít:
-# Egy négyzetet tud elemezni és annak indexét paraméterként kapja. Összeállít egy átlagos novemberi napot az adott négyzeten. Egy görbe, amit egy regresszor hoz létre, lesz az átlagos nap.
-# - Végigmegy a training data összes napjának adott négyzetén és minden timestampre csinál egy targetet (nevezzük activitynek). Úgy hozza létre a activityt, hogy veszi az SMS in/out és call in/out adatok (tehát 4 különböző, de összehasonlítható) átlagát.
-# - Kirajzolja ezeket az értékeket.
-
 # TODO Hogyan kéne még fejleszteni a tranininget:
 # - Kiszűrni a training databól az outlinerket, hisz egy átlagos napot akarunk megkapni.
 # - A munkanapot és a hétvégét különválasztani.
@@ -22,8 +17,16 @@ from sklearn.preprocessing import MinMaxScaler
 from scipy.interpolate import splrep
 from scipy.interpolate import splev
 
+# constants
+MINUTES_PER_HOUR = 60
+MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
+
+# parameters
+SPLINE_DEGREE = 3
+SPLINE_X_SAMPLES = 144
+
 # parse the arguments
-parser = ArgumentParser(description='The machine learning algorithm for the anomaly detector.')
+parser = ArgumentParser(description='The machine learning algorithm for the anomaly detector application.')
 parser.add_argument('--training', help='Path to the root directory of the training dataset.', required=True)
 parser.add_argument('--testing', help='Path to the root directory of the testing dataset.', required=True)
 parser.add_argument('-s','--square', type=int, help='The square to analyze.', required=True)
@@ -32,7 +35,7 @@ trainingFilesRoot = args['training']
 testingFilesRoot = args['testing']
 square = args['square']
 
-# preprocess the dataset under the given root and return the features and the targets
+# preprocess the dataset under the given root and return the x and the y values
 def preprocessDataset(datasetRoot, isTesting=False):
     startTime = time()
 
@@ -53,7 +56,7 @@ def preprocessDataset(datasetRoot, isTesting=False):
                 elif int(row['square_id']) > square: # assume that the square id is increasing in each file
                     break
 
-    # drop country code and the internet traffic and aggregate the rest
+    # create the data dictionary, where the keys are the time intervals and the values are the dictinary with the data. also we drop the country code
     cleanData = {}
     for row in rawData:
         if row['time_interval'] in cleanData:
@@ -68,70 +71,63 @@ def preprocessDataset(datasetRoot, isTesting=False):
                 'internet_traffic' : float(row['internet_traffic']) if row['internet_traffic'] != '' else float(0)
             }
 
-    # collect the features and the targets
-    features = np.array([])
-    targets = None
+    # collect the x values and the y values for each row
+    x = np.array([])
+    yMatrix = None
     for timestamp, properties in cleanData.items():
         date = datetime.fromtimestamp(float(timestamp) / 1000.0)
-        minutes = 60 * date.hour + date.minute
+        minutes = MINUTES_PER_HOUR * date.hour + date.minute
         if isTesting:
-            minutes += 24 * 60 * (date.day - 1)
-        features = np.append(features, minutes)
-        newTargetsRow = [properties['sms_in'], properties['sms_out'], properties['call_in'], properties['call_out'], properties['internet_traffic']]
-        if targets is None:
-            targets = np.array(newTargetsRow)
+            minutes += MINUTES_PER_DAY * (date.day - 1)
+        x = np.append(x, minutes)
+        yNewRow = [properties['sms_in'], properties['sms_out'], properties['call_in'], properties['call_out'], properties['internet_traffic']]
+        if yMatrix is None:
+            yMatrix = np.array(yNewRow)
         else:
-            targets = np.vstack([targets, newTargetsRow])
+            yMatrix = np.vstack([yMatrix, yNewRow])
 
-    # scale the targets into (0,1)
-    targets = MinMaxScaler().fit_transform(targets)
+    # scale the yMatrix into (0,1) by column
+    yMatrix = MinMaxScaler().fit_transform(yMatrix)
 
-    # reduce the targets to 1, by calculate the average of each row
-    reducedTargets = np.array([])
-    for row in targets:
-        reducedTargets = np.append(reducedTargets, np.average(row))
-    targets = reducedTargets
+    # reduce the columns in the yMatrix to 1, by calculating the average of each row
+    y = np.array([])
+    for row in yMatrix:
+        y = np.append(y, np.average(row))
 
-    # sort the arrays by the timestamp
-    order = np.argsort(features)
-    features = np.array(features)[order]
-    targets = np.array(targets)[order]
-
-    features = features.reshape(-1, 1) # required by sklearn
+    # sort the values by the timestamp (x)
+    order = np.argsort(x)
+    x = np.array(x)[order]
+    y = np.array(y)[order]
 
     print('Time for preprocess a dataset: ', round(time() - startTime, 3), ' sec')
-    return targets, features
+    return x, y
 
 # preprocess the training dataset
-targetsForTraining, featuresForTraining = preprocessDataset(trainingFilesRoot)
-print('Targets for training: ', targetsForTraining)
-print('Features for training: ', featuresForTraining)
+xTraining, yTraining = preprocessDataset(trainingFilesRoot)
 
 # preprocess the testing dataset
-targetsForTesting, featuresForTesting = preprocessDataset(testingFilesRoot, isTesting=True)
-print('Targets for testing: ', targetsForTesting)
-print('Features for testing: ', featuresForTesting)
+xTesting, yTesting = preprocessDataset(testingFilesRoot, isTesting=True)
 
-# create a interpolation polynomial based on the given features and targets
-def createInterpolationPolynomial(features, targets):
+# create a interpolation polynomial based on the given x and y values
+def createInterpolationPolynomial(x, y):
     startTime = time()
-    interpolationPolynomial = splrep(features, targets, k=3)
-    xnew = np.linspace(np.amin(features), np.amax(features), 144, endpoint=True)
-    ynew = splev(xnew, interpolationPolynomial)
+    interpolationPolynomial = splrep(x, y, k=SPLINE_DEGREE) # TODO kivezetni paraméterbe az összes többit
+    x = np.linspace(np.amin(x), np.amax(x), SPLINE_X_SAMPLES)
+    y = splev(x, interpolationPolynomial)
     print('Create interpolation polynomial time: ', round(time() - startTime, 3), ' sec')
-    return xnew, ynew
+    return x, y
 
 # create the interpolation polynomial based on the training data
-trainingInterpolationPolynomialX, trainingInterpolationPolynomialY = createInterpolationPolynomial(featuresForTraining, targetsForTraining)
+xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial = createInterpolationPolynomial(xTraining, yTraining)
 
-# draw the day's data into the plot and show it
-def drawDayIntoThePlotAndShow(day, dayFeatures, dayTargets):
-    plot.scatter(featuresForTraining, targetsForTraining, color='gray', label='training data')
-    plot.plot(trainingInterpolationPolynomialX, trainingInterpolationPolynomialY, color='blue', label='trained interpolation polynomial')
+# show the given day's data and the November's avarage data in a plot
+def showPlotForDay(day, xDay, yDay):
+    plot.scatter(xTraining, yTraining, color='0.8', label='data points for November')
+    plot.plot(xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial, color='blue', label='interpolation polynomial for November')
 
-    plot.scatter(dayFeatures, dayTargets, color='black', label='current day data')
-    currentDayInterpolationPolynomialX, currentDayInterpolationPolynomialY = createInterpolationPolynomial(dayFeatures, dayTargets)
-    plot.plot(currentDayInterpolationPolynomialX, currentDayInterpolationPolynomialY, color='red', label='current day interpolation polynomial')
+    plot.scatter(xDay, yDay, color='black', label='data points for December '+str(day))
+    xDayInterpolationPolynomial, yDayInterpolationPolynomial = createInterpolationPolynomial(xDay, yDay)
+    plot.plot(xDayInterpolationPolynomial, yDayInterpolationPolynomial, color='red', label='interpolation polynomial for December '+str(day))
 
     plot.xlabel('time in minutes')
     plot.ylabel('activity')
@@ -139,20 +135,19 @@ def drawDayIntoThePlotAndShow(day, dayFeatures, dayTargets):
     plot.legend()
     plot.show()
 
-# walk through each day in the testing dataset and draw the regression line
-currentDayFeatures = None
-currentDayTargets = None
+# walk through each day in the testing dataset and show each day's data and the November's avarage data in a plot
+xDay = None
+yDay = None
 currentDay = 0
-for index, minutes in enumerate(featuresForTesting):
-    day = int(int(minutes[0]) / int(24 * 60) + 1)
+for index, minutes in enumerate(xTesting):
+    day = int(int(minutes) / int(24 * 60) + 1)
     if currentDay < day: # if we collected all data for a day (assume that the minutes are in ascending order)
         if currentDay > 0: # skip day zero
-            currentDayFeatures = currentDayFeatures.reshape(-1, 1) # required by sklearn
-            drawDayIntoThePlotAndShow(currentDay, currentDayFeatures, currentDayTargets)
+            showPlotForDay(currentDay, xDay, yDay)
         # prepare for the new day
         currentDay = day
-        currentDayFeatures = np.array([])
-        currentDayTargets = np.array([])
+        xDay = np.array([])
+        yDay = np.array([])
     # collect the day's data
-    currentDayFeatures = np.append(currentDayFeatures, minutes[0] - (day - 1) * 24 * 60)
-    currentDayTargets = np.append(currentDayTargets, targetsForTesting[index])
+    xDay = np.append(xDay, minutes - (day - 1) * MINUTES_PER_DAY)
+    yDay = np.append(yDay, yTesting[index])
