@@ -9,7 +9,6 @@
 # - A country code segítségével csinálni egy új feature-t.
 # - Ahelyett, hogy az összes feature-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
 # - PCA-t használni.
-# - Az SVR helyett más regresszort is kipróbálni. Parameter optimizerel a paramétereit a legjobbra lőni. Regresszor helyett egyszerű átlagolást is kipróbálni.
 
 from argparse import ArgumentParser
 from os import walk
@@ -19,10 +18,9 @@ from time import time
 from datetime import datetime
 import matplotlib.pyplot as plot
 import numpy as np
-from sklearn.svm import SVR
 from sklearn.preprocessing import MinMaxScaler
-from scipy.interpolate import interp1d
-from scipy import interpolate
+from scipy.interpolate import splrep
+from scipy.interpolate import splev
 
 # parse the arguments
 parser = ArgumentParser(description='The machine learning algorithm for the anomaly detector.')
@@ -114,38 +112,27 @@ targetsForTesting, featuresForTesting = preprocessDataset(testingFilesRoot, isTe
 print('Targets for testing: ', targetsForTesting)
 print('Features for testing: ', featuresForTesting)
 
-# create the regression line
-def createRegressionLine(features, targets):
-    start_time = time()
-    model = SVR(kernel='rbf')
-    model = model.fit(features, targets)
-    line = model.predict(features)
-    score = model.score(features, targets)
-    print('Create regression line time: ', round(time() - start_time, 3), ' sec')
-    return line, score
+# create a interpolation polynomial based on the given features and targets
+def createInterpolationPolynomial(features, targets):
+    startTime = time()
+    interpolationPolynomial = splrep(features, targets, k=3)
+    xnew = np.linspace(np.amin(features), np.amax(features), 144, endpoint=True)
+    ynew = splev(xnew, interpolationPolynomial)
+    print('Create interpolation polynomial time: ', round(time() - startTime, 3), ' sec')
+    return xnew, ynew
 
-# create the regression line based on the training data
-regressionLine, regressionLineScore = createRegressionLine(featuresForTraining, targetsForTraining)
+# create the interpolation polynomial based on the training data
+trainingInterpolationPolynomialX, trainingInterpolationPolynomialY = createInterpolationPolynomial(featuresForTraining, targetsForTraining)
 
 # draw the day's data into the plot and show it
 def drawDayIntoThePlotAndShow(day, dayFeatures, dayTargets):
-    dayFeaturesForInterpolation = dayFeatures.ravel();
-    dayTargetsForInterpolation = dayTargets.ravel();
+    plot.scatter(featuresForTraining, targetsForTraining, color='gray', label='training data')
+    plot.plot(trainingInterpolationPolynomialX, trainingInterpolationPolynomialY, color='blue', label='trained interpolation polynomial')
 
-    #interpolated = interp1d(dayFeaturesForInterpolation, dayTargetsForInterpolation, kind='quadratic')
-    #xnew = np.linspace(np.amin(dayFeaturesForInterpolation), np.amax(dayFeaturesForInterpolation), 1440, endpoint=True)
-    #plot.plot(dayFeaturesForInterpolation, dayTargetsForInterpolation, 'o', xnew, interpolated(xnew))
+    plot.scatter(dayFeatures, dayTargets, color='black', label='current day data')
+    currentDayInterpolationPolynomialX, currentDayInterpolationPolynomialY = createInterpolationPolynomial(dayFeatures, dayTargets)
+    plot.plot(currentDayInterpolationPolynomialX, currentDayInterpolationPolynomialY, color='red', label='current day interpolation polynomial')
 
-    interpolated = interpolate.splrep(dayFeaturesForInterpolation, dayTargetsForInterpolation)
-    xnew = np.linspace(np.amin(dayFeaturesForInterpolation), np.amax(dayFeaturesForInterpolation), 1440, endpoint=True)
-    ynew = interpolate.splev(xnew, interpolated, der=0)
-    plot.plot(dayFeaturesForInterpolation, dayTargetsForInterpolation, 'o', xnew, ynew)
-
-    dayRegressionLine, dayRegressionLineScore = createRegressionLine(dayFeatures, dayTargets)
-    plot.scatter(featuresForTraining, targetsForTraining, color='0.8', label='training data')
-    plot.plot(featuresForTraining, regressionLine, color='b', label=('trained regression line (' + str(regressionLineScore) + ')'))
-    plot.scatter(dayFeatures, dayTargets, color='k', label='day data')
-    plot.plot(dayFeatures, dayRegressionLine, color='r', label='current day regression line (' + str(dayRegressionLineScore) + ')')
     plot.xlabel('time in minutes')
     plot.ylabel('activity')
     plot.title('The Average Day in November vs day ' + str(day) + ' in December')
