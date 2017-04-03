@@ -1,5 +1,4 @@
 # TODO Hogyan kéne még fejleszteni a tranininget:
-# - Hétvégének tekinteni a public holiday-t.
 # - A country code segítségével csinálni egy új feature-t.
 # - Ahelyett, hogy az összes feature-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
 # - PCA-t használni.
@@ -116,7 +115,7 @@ def preprocessDataset(datasetRoot, isTesting=False):
         if isTesting:
             minutes += MINUTES_PER_DAY * (date.day - 1)
 
-        if date.weekday() < 5:
+        if date.weekday() < 5 and (not ((not isTesting) and date.day == 1)): # november 1 is a public holiday in Italy
             x = np.append(x, minutes)
             yMatrix = extendYMatrixWithData(yMatrix, properties)
         else:
