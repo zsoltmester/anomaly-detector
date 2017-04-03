@@ -1,5 +1,5 @@
 # TODO Hogyan kéne még fejleszteni a tranininget:
-# - A munkanapot és a hétvégét különválasztani.
+# - Hétvégének tekinteni a public holiday-t.
 # - A country code segítségével csinálni egy új feature-t.
 # - Ahelyett, hogy az összes feature-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
 # - PCA-t használni.
@@ -35,6 +35,33 @@ args = vars(parser.parse_args())
 trainingFilesRoot = args['training']
 testingFilesRoot = args['testing']
 squares = args['squares']
+
+# extend the given y matrix with the provided data
+def extendYMatrixWithData(yMatrix, data):
+    yNewRow = [data['sms_in'], data['sms_out'], data['call_in'], data['call_out'], data['internet_traffic']]
+    if yMatrix is None:
+        yMatrix = np.array(yNewRow)
+    else:
+        yMatrix = np.vstack([yMatrix, yNewRow])
+    return yMatrix
+
+# scale the given features to make them comparable
+def scaleFeatures(featureMatrix):
+    return MinMaxScaler().fit_transform(featureMatrix)
+
+# translate the rows of the given matrix into their mean values
+def translateRowsToTheirAverages(matrix):
+    meanVector = np.array([])
+    for row in matrix:
+        meanVector = np.append(meanVector, np.average(row))
+    return meanVector
+
+# sort the first array, then the second with the same order as the first
+def sortArraysBasedOnTheFirst(first, second):
+    order = np.argsort(first)
+    first = np.array(first)[order]
+    second = np.array(second)[order]
+    return first, second
 
 # preprocess the dataset under the given root and return the x and the y values
 def preprocessDataset(datasetRoot, isTesting=False):
@@ -79,40 +106,43 @@ def preprocessDataset(datasetRoot, isTesting=False):
 
     # collect the x values and the y values for each row
     x = np.array([])
+    xWeekend = np.array([])
     yMatrix = None
+    yMatrixWeekend = None
     for timestamp, properties in cleanData.items():
         date = datetime.fromtimestamp(float(timestamp) / 1000.0)
+
         minutes = MINUTES_PER_HOUR * date.hour + date.minute
         if isTesting:
             minutes += MINUTES_PER_DAY * (date.day - 1)
-        x = np.append(x, minutes)
-        yNewRow = [properties['sms_in'], properties['sms_out'], properties['call_in'], properties['call_out'], properties['internet_traffic']]
-        if yMatrix is None:
-            yMatrix = np.array(yNewRow)
+
+        if date.weekday() < 5:
+            x = np.append(x, minutes)
+            yMatrix = extendYMatrixWithData(yMatrix, properties)
         else:
-            yMatrix = np.vstack([yMatrix, yNewRow])
+            xWeekend = np.append(xWeekend, minutes)
+            yMatrixWeekend = extendYMatrixWithData(yMatrixWeekend, properties)
 
-    # scale the yMatrix into (0,1) by column
-    yMatrix = MinMaxScaler().fit_transform(yMatrix)
+    # scale the y metrices into (0,1) by column
+    yMatrix = scaleFeatures(yMatrix)
+    yMatrixWeekend = scaleFeatures(yMatrixWeekend)
 
-    # reduce the columns in the yMatrix to 1, by calculating the average of each row
-    y = np.array([])
-    for row in yMatrix:
-        y = np.append(y, np.average(row))
+    # reduce the columns in the y matrices to 1, by calculating the average of each row
+    y = translateRowsToTheirAverages(yMatrix)
+    yWeekend = translateRowsToTheirAverages(yMatrixWeekend)
 
-    # sort the values by the timestamp (x)
-    order = np.argsort(x)
-    x = np.array(x)[order]
-    y = np.array(y)[order]
+    # sort the values by the timestamp
+    x, y = sortArraysBasedOnTheFirst(x, y)
+    xWeekend, yWeekend = sortArraysBasedOnTheFirst(xWeekend, yWeekend)
 
     print('Time for preprocess a dataset: ', round(time() - startTime, 3), ' sec')
-    return x, y
+    return x, y, xWeekend, yWeekend
 
 # preprocess the training dataset
-xTraining, yTraining = preprocessDataset(trainingFilesRoot)
+xTraining, yTraining, xWeekendTraining, yWeekendTraining = preprocessDataset(trainingFilesRoot)
 
 # preprocess the testing dataset
-xTesting, yTesting = preprocessDataset(testingFilesRoot, isTesting=True)
+xTesting, yTesting, xWeekendTesting, yWeekendTesting = preprocessDataset(testingFilesRoot, isTesting=True)
 
 # create a interpolation polynomial based on the given x and y values
 def createInterpolationPolynomial(x, y):
@@ -121,8 +151,9 @@ def createInterpolationPolynomial(x, y):
     y = splev(x, interpolationPolynomial)
     return x, y
 
-# remove the duplicates from the xTraining
+# remove the duplicates from the trainig x vectors
 xTrainingUnique = np.unique(xTraining)
+xWeekendTrainingUnique = np.unique(xWeekendTraining)
 
 # drop the outliers from the given dataset
 def dropOutliers(dataset):
@@ -131,26 +162,33 @@ def dropOutliers(dataset):
     maxAllowedDifference = OUTLIER_CONTROL * standardDeviation
     return dataset[difference < maxAllowedDifference]
 
-# create the average y value for each timestamp in the traning dataset
-yTrainingAverage = np.array([])
-currentTimstamp = 0
-yCurrentValues = np.array([])
-for index, timestamp in enumerate(xTraining):
-    if currentTimstamp < timestamp:
-        # add the average of the collected y values
-        yCurrentValues = dropOutliers(yCurrentValues)
-        yTrainingAverage = np.append(yTrainingAverage, np.mean(yCurrentValues))
-        # prepare for the new timestamp
-        currentTimstamp = timestamp
-        yCurrentValues = np.array([])
-    yCurrentValues = np.append(yCurrentValues, yTraining[index])
-yTrainingAverage = np.append(yTrainingAverage, np.average(yCurrentValues))
+# create an average value for each timestamp and return them in a vector
+def createAverageForEachTimestamp(timestamps, values):
+    yTrainingAverage = np.array([])
+    currentTimstamp = 0
+    yCurrentValues = np.array([])
+    for index, timestamp in enumerate(timestamps):
+        if currentTimstamp < timestamp:
+            # add the average of the collected y values
+            yCurrentValues = dropOutliers(yCurrentValues)
+            yTrainingAverage = np.append(yTrainingAverage, np.mean(yCurrentValues))
+            # prepare for the new timestamp
+            currentTimstamp = timestamp
+            yCurrentValues = np.array([])
+        yCurrentValues = np.append(yCurrentValues, values[index])
+    yTrainingAverage = np.append(yTrainingAverage, np.average(yCurrentValues))
+    return yTrainingAverage
 
-# create the interpolation polynomial based on the training data
+# create the average y values for each timestamp in the traning dataset
+yTrainingAverage = createAverageForEachTimestamp(xTraining, yTraining)
+yWeekendTrainingAverage = createAverageForEachTimestamp(xWeekendTraining, yWeekendTraining)
+
+# create the interpolation polynomials based on the training dataset
 xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial = createInterpolationPolynomial(xTrainingUnique, yTrainingAverage)
+xWeekendTrainingInterpolationPolynomial, yWeekendTrainingInterpolationPolynomial = createInterpolationPolynomial(xWeekendTrainingUnique, yWeekendTrainingAverage)
 
 # show the given day's data and the November's avarage data in a plot
-def showPlotForDay(day, xDay, yDay):
+def showPlotForDay(xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial, day, xDay, yDay):
     plot.scatter(xTraining, yTraining, color='silver', label='data points for November')
     plot.scatter(xTrainingUnique, yTrainingAverage, color='gray', label='avarage data points for November')
     plot.plot(xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial, color='black', label='interpolation polynomial for November')
@@ -165,19 +203,24 @@ def showPlotForDay(day, xDay, yDay):
     plot.legend()
     plot.show()
 
+# plot the results
+def plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial):
+    xDay = None
+    yDay = None
+    currentDay = 0
+    for index, minutes in enumerate(xTesting):
+        day = int(int(minutes) / int(24 * 60) + 1)
+        if currentDay < day: # if we collected all data for a day (assume that the minutes are in ascending order)
+            if currentDay > 0: # skip day zero
+                showPlotForDay(xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial, currentDay, xDay, yDay)
+            # prepare for the new day
+            currentDay = day
+            xDay = np.array([])
+            yDay = np.array([])
+        # collect the day's data
+        xDay = np.append(xDay, minutes - (day - 1) * MINUTES_PER_DAY)
+        yDay = np.append(yDay, yTesting[index])
+
 # walk through each day in the testing dataset and show each day's data and the November's avarage data in a plot
-xDay = None
-yDay = None
-currentDay = 0
-for index, minutes in enumerate(xTesting):
-    day = int(int(minutes) / int(24 * 60) + 1)
-    if currentDay < day: # if we collected all data for a day (assume that the minutes are in ascending order)
-        if currentDay > 0: # skip day zero
-            showPlotForDay(currentDay, xDay, yDay)
-        # prepare for the new day
-        currentDay = day
-        xDay = np.array([])
-        yDay = np.array([])
-    # collect the day's data
-    xDay = np.append(xDay, minutes - (day - 1) * MINUTES_PER_DAY)
-    yDay = np.append(yDay, yTesting[index])
+plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial)
+plotResults(xWeekendTesting, yWeekendTesting, xWeekendTraining, yWeekendTraining, xWeekendTrainingUnique, yWeekendTrainingAverage, xWeekendTrainingInterpolationPolynomial, yWeekendTrainingInterpolationPolynomial)
