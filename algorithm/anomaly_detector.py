@@ -6,14 +6,15 @@
 #       > a testing fájlok elérési útvonalát egy listaként és
 #       > az elemezni kívánt négyzetek id-ját egy listaként.
 #   * Preprocessor module. A preprocessDataset function feladatait veszi át.
+#   * ...
 # - A country code segítségével csinálni egy új feature-t.
 # - Ahelyett, hogy az összes feature-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
 # - PCA-t használni.
 
+import initialise
+
 import matplotlib.pyplot as plot
 import numpy as np
-
-from argparse import ArgumentParser
 from csv import DictReader
 from datetime import datetime
 from os import walk
@@ -32,15 +33,7 @@ SPLINE_DEGREE = 3
 SPLINE_X_SAMPLES = 1440
 OUTLIER_CONTROL = 2
 
-# parse the arguments
-parser = ArgumentParser(description='The machine learning algorithm for the anomaly detector application.')
-parser.add_argument('--training', help='Path to the root directory of the training dataset.', required=True)
-parser.add_argument('--testing', help='Path to the root directory of the testing dataset.', required=True)
-parser.add_argument('-s','--squares', type=int, help='The number of square to analyze.', required=True)
-args = vars(parser.parse_args())
-trainingFilesRoot = args['training']
-testingFilesRoot = args['testing']
-squares = args['squares']
+trainingFiles, testingFiles, squares = initialise.initialise()
 
 # extend the given y matrix with the provided data
 def extendYMatrixWithData(yMatrix, data):
@@ -69,14 +62,9 @@ def sortArraysBasedOnTheFirst(first, second):
     second = np.array(second)[order]
     return first, second
 
-# preprocess the dataset under the given root and return the x and the y values
-def preprocessDataset(datasetRoot, isTesting=False):
+# preprocess the given dataset and return the x and the y values
+def preprocessDataset(datasetFiles, isTesting=False):
     startTime = time()
-
-    # collect the dataset's files
-    datasetFiles = []
-    for (dirPath, dirNames, fileNames) in walk(datasetRoot):
-        datasetFiles.extend([join(dirPath, fileName) for fileName in fileNames])
 
     # walk through the dataset's files and read the data for the given number of squares
     fieldNames=('square_id', 'time_interval', 'country_code', 'sms_in', 'sms_out', 'call_in', 'call_out', 'internet_traffic')
@@ -89,11 +77,19 @@ def preprocessDataset(datasetRoot, isTesting=False):
             for row in tsvReader:
                 if lastSquareId != int(row['square_id']): # assume that the values for a square are groupped together
                     counter += 1
-                    if counter < squares:
+                    if counter < len(squares):
                         lastSquareId = int(row['square_id'])
                     else:
                         break
                 rawData.append(row)
+        # with open(datasetFile) as tsvFile:
+        #     print('working on a new file')
+        #     tsvReader = DictReader(tsvFile, delimiter='\t', fieldnames=fieldNames)
+        #     for row in tsvReader:
+        #         for square_id in squares:
+        #             if int(row['square_id']) == square_id:
+        #                 print('found')
+        #                 rawData.append(row)
 
     # create the data dictionary, where the keys are the time intervals and the values are the dictinary with the data. also we drop the country code
     cleanData = {}
@@ -145,10 +141,10 @@ def preprocessDataset(datasetRoot, isTesting=False):
     return x, y, xWeekend, yWeekend
 
 # preprocess the training dataset
-xTraining, yTraining, xWeekendTraining, yWeekendTraining = preprocessDataset(trainingFilesRoot)
+xTraining, yTraining, xWeekendTraining, yWeekendTraining = preprocessDataset(trainingFiles)
 
 # preprocess the testing dataset
-xTesting, yTesting, xWeekendTesting, yWeekendTesting = preprocessDataset(testingFilesRoot, isTesting=True)
+xTesting, yTesting, xWeekendTesting, yWeekendTesting = preprocessDataset(testingFiles, isTesting=True)
 
 # create a interpolation polynomial based on the given x and y values
 def createInterpolationPolynomial(x, y):
