@@ -1,4 +1,11 @@
 # TODO Hogyan kéne még fejleszteni a tranininget:
+# - A kódminőséget javítani ezek szerint: https://www.python.org/dev/peps/pep-0008/, https://www.python.org/dev/peps/pep-0257/, https://google.github.io/styleguide/pyguide.html, pylint. (Package vs module vs class.) Ezekkel együtt modularizálni az algoritmust:
+#   * A kód csak azokat a hibákat kezeli le, amiket ki is tud javítani. Ha valamit nem tud, vagy olyan állapotba kerül, hogy biztos nem fog tudni értelmes outputot létrehozni, akkor != 0 exit kóddal kilép.
+#   * ArgumentParser module. Beolvassa az argumentumokat és visszaadja
+#       > a training fájlok elérési útvonalát egy listaként,
+#       > a testing fájlok elérési útvonalát egy listaként és
+#       > az elemezni kívánt négyzetek id-ját egy listaként.
+#   * Preprocessor module. A preprocessDataset function feladatait veszi át.
 # - A country code segítségével csinálni egy új feature-t.
 # - Ahelyett, hogy az összes feature-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
 # - PCA-t használni.
