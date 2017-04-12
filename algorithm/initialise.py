@@ -2,9 +2,8 @@
 Utility functions for the anomaly detector to initialise the algorithm.
 """
 
-import os
-
 import argparse
+import os
 
 def _collect_files_in_dir(dir):
     """Collects the files in the given directory.

@@ -1,10 +1,6 @@
 # TODO Hogyan kéne még fejleszteni a tranininget:
 # - A kódminőséget javítani ezek szerint: https://www.python.org/dev/peps/pep-0008/, https://www.python.org/dev/peps/pep-0257/, https://google.github.io/styleguide/pyguide.html, pylint. (Package vs module vs class.) Ezekkel együtt modularizálni az algoritmust:
 #   * A kód csak azokat a hibákat kezeli le, amiket ki is tud javítani. Ha valamit nem tud, vagy olyan állapotba kerül, hogy biztos nem fog tudni értelmes outputot létrehozni, akkor != 0 exit kóddal kilép.
-#   * ArgumentParser module. Beolvassa az argumentumokat és visszaadja
-#       > a training fájlok elérési útvonalát egy listaként,
-#       > a testing fájlok elérési útvonalát egy listaként és
-#       > az elemezni kívánt négyzetek id-ját egy listaként.
 #   * Preprocessor module. A preprocessDataset function feladatait veszi át.
 #   * ...
 # - A country code segítségével csinálni egy új feature-t.
@@ -12,13 +8,11 @@
 # - PCA-t használni.
 
 import initialise
+import preprocess
 
 import matplotlib.pyplot as plot
 import numpy as np
-from csv import DictReader
 from datetime import datetime
-from os import walk
-from os.path import join
 from scipy.interpolate import splev
 from scipy.interpolate import splrep
 from sklearn.preprocessing import MinMaxScaler
@@ -66,45 +60,8 @@ def sortArraysBasedOnTheFirst(first, second):
 def preprocessDataset(datasetFiles, isTesting=False):
     startTime = time()
 
-    # walk through the dataset's files and read the data for the given number of squares
-    fieldNames=('square_id', 'time_interval', 'country_code', 'sms_in', 'sms_out', 'call_in', 'call_out', 'internet_traffic')
-    rawData = []
-    for datasetFile in datasetFiles:
-        with open(datasetFile) as tsvFile:
-            tsvReader = DictReader(tsvFile, delimiter='\t', fieldnames=fieldNames)
-            lastSquareId = -1
-            counter = -1
-            for row in tsvReader:
-                if lastSquareId != int(row['square_id']): # assume that the values for a square are groupped together
-                    counter += 1
-                    if counter < len(squares):
-                        lastSquareId = int(row['square_id'])
-                    else:
-                        break
-                rawData.append(row)
-        # with open(datasetFile) as tsvFile:
-        #     print('working on a new file')
-        #     tsvReader = DictReader(tsvFile, delimiter='\t', fieldnames=fieldNames)
-        #     for row in tsvReader:
-        #         for square_id in squares:
-        #             if int(row['square_id']) == square_id:
-        #                 print('found')
-        #                 rawData.append(row)
-
-    # create the data dictionary, where the keys are the time intervals and the values are the dictinary with the data. also we drop the country code
-    cleanData = {}
-    for row in rawData:
-        if row['time_interval'] in cleanData:
-            for key in cleanData[row['time_interval']]:
-                cleanData[row['time_interval']][key] += float(row[key]) if row[key] != '' else float(0)
-        else:
-            cleanData[row['time_interval']] = {
-                'sms_in' : float(row['sms_in']) if row['sms_in'] != '' else float(0),
-                'sms_out' : float(row['sms_out']) if row['sms_out'] != '' else float(0),
-                'call_in' : float(row['call_in']) if row['call_in'] != '' else float(0),
-                'call_out' : float(row['call_out']) if row['call_out'] != '' else float(0),
-                'internet_traffic' : float(row['internet_traffic']) if row['internet_traffic'] != '' else float(0)
-            }
+    rawData = preprocess.read_files(datasetFiles, squares)
+    cleanData = preprocess.group_data_by_time_interval(rawData)
 
     # collect the x values and the y values for each row
     x = np.array([])
