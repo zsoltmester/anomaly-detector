@@ -9,6 +9,7 @@
 
 import initialise
 import preprocess
+import constant
 
 import matplotlib.pyplot as plot
 import numpy as np
@@ -17,44 +18,12 @@ from scipy.interpolate import splev
 from scipy.interpolate import splrep
 from time import time
 
-"""
-ID for weekdays.
-"""
-WEEKDAYS = 'weekdays'
-
-"""
-ID for weekends.
-"""
-WEEKENDS = 'weekends'
-
-"""
-ID for timestamps.
-"""
-TIMESTAMPS = 'timestamps'
-
-"""
-ID for features.
-"""
-FEATURES = 'features'
-
-# constants
-MINUTES_PER_HOUR = 60
-MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
-
 # parameters
 SPLINE_DEGREE = 3
 SPLINE_X_SAMPLES = 1440
 OUTLIER_CONTROL = 2
 
 trainingFiles, testingFiles, squares = initialise.initialise()
-
-# TODO do I need this?
-# sort the first array, then the second with the same order as the first
-def sortArraysBasedOnTheFirst(first, second):
-    order = np.argsort(first)
-    first = np.array(first)[order]
-    second = np.array(second)[order]
-    return first, second
 
 # preprocess the given dataset and return the x and the y values
 def preprocessDataset(datasetFiles):
@@ -63,31 +32,31 @@ def preprocessDataset(datasetFiles):
     cleanData = preprocess.group_data_by_time_interval(rawData)
     timestamps, features = preprocess.split_data_for_timestamps_and_features(cleanData)
     weekdays, weekends = preprocess.split_data_for_weekdays_and_weekends(timestamps, features)
-    categories = { WEEKDAYS: weekdays, WEEKENDS: weekends }
+    categories = { constant.WEEKDAYS: weekdays, constant.WEEKENDS: weekends }
     for category_name, category in categories.items():
-        category[FEATURES] = preprocess.scale_features(category[FEATURES])
-        category[FEATURES] = preprocess.translate_matrix_to_mean_vector(category[FEATURES]) # TODO this should depend on an input parameter
+        category[constant.FEATURES] = preprocess.scale_features(category[constant.FEATURES])
+        category[constant.FEATURES] = preprocess.translate_matrix_to_mean_vector(category[constant.FEATURES]) # TODO this should depend on an input parameter
     print('Time for preprocess a dataset: ', round(time() - startTime, 3), ' sec')
     return categories
 
 trainingData = preprocessDataset(trainingFiles)
 for category_name, category in trainingData.items():
-    category[TIMESTAMPS] = preprocess.get_minutes_on_day(category[TIMESTAMPS])
-    category[TIMESTAMPS], category[FEATURES] = sortArraysBasedOnTheFirst(category[TIMESTAMPS], category[FEATURES])
+    category[constant.TIMESTAMPS] = preprocess.get_minutes(category[constant.TIMESTAMPS])
+    category[constant.TIMESTAMPS], category[constant.FEATURES] = preprocess.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
 
 testingData = preprocessDataset(testingFiles)
 for category_name, category in testingData.items():
-    category[TIMESTAMPS], category[FEATURES] = sortArraysBasedOnTheFirst(category[TIMESTAMPS], category[FEATURES])
+    category[constant.TIMESTAMPS], category[constant.FEATURES] = preprocess.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
 
-xTraining = trainingData[WEEKDAYS][TIMESTAMPS]
-yTraining = trainingData[WEEKDAYS][FEATURES]
-xWeekendTraining = trainingData[WEEKENDS][TIMESTAMPS]
-yWeekendTraining = trainingData[WEEKENDS][FEATURES]
+xTraining = trainingData[constant.WEEKDAYS][constant.TIMESTAMPS]
+yTraining = trainingData[constant.WEEKDAYS][constant.FEATURES]
+xWeekendTraining = trainingData[constant.WEEKENDS][constant.TIMESTAMPS]
+yWeekendTraining = trainingData[constant.WEEKENDS][constant.FEATURES]
 
-xTesting = testingData[WEEKDAYS][TIMESTAMPS]
-yTesting = testingData[WEEKDAYS][FEATURES]
-xWeekendTesting = testingData[WEEKENDS][TIMESTAMPS]
-yWeekendTesting = testingData[WEEKENDS][FEATURES]
+xTesting = testingData[constant.WEEKDAYS][constant.TIMESTAMPS]
+yTesting = testingData[constant.WEEKDAYS][constant.FEATURES]
+xWeekendTesting = testingData[constant.WEEKENDS][constant.TIMESTAMPS]
+yWeekendTesting = testingData[constant.WEEKENDS][constant.FEATURES]
 
 # remove the duplicates from the trainig x vectors
 xTrainingUnique = np.unique(xTraining)
@@ -155,8 +124,8 @@ def plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrai
     currentDay = 0
     for index, minutes in enumerate(xTesting):
         date = datetime.fromtimestamp(float(minutes) / 1000.0)
-        minutes = MINUTES_PER_HOUR * date.hour + date.minute
-        minutes += MINUTES_PER_DAY * (date.day - 1)
+        minutes = constant.MINUTES_PER_HOUR * date.hour + date.minute
+        minutes += constant.MINUTES_PER_DAY * (date.day - 1)
         day = int(int(minutes) / int(24 * 60) + 1)
         if currentDay < day: # if we collected all data for a day (assume that the minutes are in ascending order)
             if currentDay > 0: # skip day zero
@@ -166,7 +135,7 @@ def plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrai
             xDay = np.array([])
             yDay = np.array([])
         # collect the day's data
-        xDay = np.append(xDay, minutes - (day - 1) * MINUTES_PER_DAY)
+        xDay = np.append(xDay, minutes - (day - 1) * constant.MINUTES_PER_DAY)
         yDay = np.append(yDay, yTesting[index])
 
 # walk through each day in the testing dataset and show each day's data and the November's avarage data in a plot

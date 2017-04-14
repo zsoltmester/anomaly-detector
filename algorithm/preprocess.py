@@ -8,6 +8,8 @@ from datetime import datetime
 import numpy as np
 from sklearn import preprocessing
 
+import constant
+
 """
 ID for the square ID column.
 """
@@ -57,26 +59,6 @@ COLUMN_FOREIGN = 'foreign'
 IDs of the columns of the data, ordered as the input data rows.
 """
 COLUMNS = (COLUMN_SQUARE_ID, COLUMN_TIME_INTERVAL, COLUMN_COUNTRY_CODE, COLUMN_SMS_IN, COLUMN_SMS_OUT, COLUMN_CALL_IN, COLUMN_CALL_OUT, COLUMN_INTERNET_TRAFFIC)
-
-"""
-ID for weekdays.
-"""
-WEEKDAYS = 'weekdays'
-
-"""
-ID for weekends.
-"""
-WEEKENDS = 'weekends'
-
-"""
-ID for timestamps.
-"""
-TIMESTAMPS = 'timestamps'
-
-"""
-ID for features.
-"""
-FEATURES = 'features'
 
 """
 The scaler for the feature scaling.
@@ -206,7 +188,7 @@ def split_data_for_weekdays_and_weekends(timestamps, features):
         else:
             weekend_timestamps = np.append(weekend_timestamps, timestamp)
             weekend_features = _add_row(weekend_features, features[index])
-    return { TIMESTAMPS: weekday_timestamps, FEATURES: weekday_features }, { TIMESTAMPS: weekend_timestamps, FEATURES: weekend_features }
+    return { constant.TIMESTAMPS: weekday_timestamps, constant.FEATURES: weekday_features }, { constant.TIMESTAMPS: weekend_timestamps, constant.FEATURES: weekend_features }
 
 def scale_features(features):
     """Scale the features with a min-max scaler. It is saving the firstly created scaler and use it as a transformer every time.
@@ -251,10 +233,33 @@ def drop_outliers(timestamps, features):
     # TODO
     return timestamps, features
 
-def get_minutes_on_day(timestamps):
+def get_minutes(timestamps):
+    """Calculates how many minutes passed that day.
+
+    Args:
+        timestamps: The timestamp (milliseconds).
+
+    Returns:
+        The number of minutes that passed that day.
+    """
     minutes = np.array([])
     for timestamp in timestamps:
         date = datetime.fromtimestamp(float(timestamp) / 1000.0)
-        minutes_on_day = 60 * date.hour + date.minute
-        minutes = np.append(minutes, minutes_on_day)
+        minutes_passed_that_day = constant.MINUTES_PER_HOUR * date.hour + date.minute
+        minutes = np.append(minutes, minutes_passed_that_day)
     return minutes
+
+def sort_arrays_based_on_the_first(first_array, second_array):
+    """Sort the first array then the second in the same order as the first.
+
+    Args:
+        first_array: The first array to sort.
+        second_arrays: The second array to sort.
+
+    Returns:
+        A tuple with the sorted first and second array.
+    """
+    order = np.argsort(first_array)
+    first_array = np.array(first_array)[order]
+    second_array = np.array(second_array)[order]
+    return first_array, second_array
