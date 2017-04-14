@@ -3,6 +3,10 @@ Utility functions for the anomaly detector to preprocess the dataset.
 """
 
 import csv
+from datetime import datetime
+
+import numpy as np
+from sklearn import preprocessing
 
 """
 ID for the square ID column.
@@ -53,6 +57,31 @@ COLUMN_FOREIGN = 'foreign'
 IDs of the columns of the data, ordered as the input data rows.
 """
 COLUMNS = (COLUMN_SQUARE_ID, COLUMN_TIME_INTERVAL, COLUMN_COUNTRY_CODE, COLUMN_SMS_IN, COLUMN_SMS_OUT, COLUMN_CALL_IN, COLUMN_CALL_OUT, COLUMN_INTERNET_TRAFFIC)
+
+"""
+ID for weekdays.
+"""
+WEEKDAYS = 'weekdays'
+
+"""
+ID for weekends.
+"""
+WEEKENDS = 'weekends'
+
+"""
+ID for timestamps.
+"""
+TIMESTAMPS = 'timestamps'
+
+"""
+ID for features.
+"""
+FEATURES = 'features'
+
+"""
+The scaler for the feature scaling.
+"""
+_SCALER = None
 
 def read_files(files, squares):
     """Reades the given files and collect the data for the specified squares.
@@ -115,5 +144,117 @@ def group_data_by_time_interval(data):
                 COLUMN_CALL_OUT : float(row[COLUMN_CALL_OUT]) if row[COLUMN_CALL_OUT] else 0.,
                 COLUMN_INTERNET_TRAFFIC : float(row[COLUMN_INTERNET_TRAFFIC]) if row[COLUMN_INTERNET_TRAFFIC] else 0.,
             }
-            # add COLUMN_FOREIGN
+            # TODO add COLUMN_FOREIGN
     return grouped_data
+
+def _add_row(matrix, new_row):
+    """Add the new_row to the matrix.
+
+    Args:
+        matrix: The matrix to extend.
+        new_row: The new row to add the end of the matrix.
+
+    Returns:
+        The extended matrix.
+    """
+    if matrix is None:
+        matrix = np.array(new_row)
+    else:
+        matrix = np.vstack([matrix, new_row])
+    return matrix
+
+def split_data_for_timestamps_and_features(data):
+    """Split the data for timestamps and features.
+
+    Args:
+        data: The data as a dictinary, where the keys are the timestamps and the values are the features for a timestamp as a dictionary.
+
+    Returns:
+        A tuple, with the following items.
+        - 1.: The timestamps as a numpy array of strings.
+        - 2.: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature.
+    """
+    timestamps = np.array([])
+    features = None
+    for timestamp, properties in data.items():
+        timestamps = np.append(timestamps, timestamp)
+        new_row = [properties[COLUMN_SMS_IN], properties[COLUMN_SMS_OUT], properties[COLUMN_CALL_IN], properties[COLUMN_CALL_OUT], properties[COLUMN_INTERNET_TRAFFIC]]
+        features = _add_row(features, new_row)
+    return timestamps, features
+
+def split_data_for_weekdays_and_weekends(timestamps, features):
+    """Split the data for weekdays and weekends.
+
+    Args:
+        timestamps: The timestamps as a numpy array of strings.
+        features: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature.
+
+    Returns:
+        A tuple, where the first element corresponds for the weekdays and the second for the weekends. Each element is a list, with the following items.
+        - 1.: The timestamps as a numpy array of strings. (as given)
+        - 2.: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature. (as given)
+    """
+    weekday_timestamps = np.array([])
+    weekend_timestamps = np.array([])
+    weekday_features = None
+    weekend_features = None
+    for index, timestamp in enumerate(timestamps):
+        date = datetime.fromtimestamp(float(timestamp) / 1000.)
+        if date.weekday() < 5:
+            weekday_timestamps = np.append(weekday_timestamps, timestamp)
+            weekday_features = _add_row(weekday_features, features[index])
+        else:
+            weekend_timestamps = np.append(weekend_timestamps, timestamp)
+            weekend_features = _add_row(weekend_features, features[index])
+    return { TIMESTAMPS: weekday_timestamps, FEATURES: weekday_features }, { TIMESTAMPS: weekend_timestamps, FEATURES: weekend_features }
+
+def scale_features(features):
+    """Scale the features with a min-max scaler. It is saving the firstly created scaler and use it as a transformer every time.
+
+    Args:
+        features: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature.
+
+    Returns:
+        - 1.: The scaled features.
+    """
+    global _SCALER
+    if _SCALER is None:
+        _SCALER = preprocessing.MinMaxScaler().fit(features)
+    return _SCALER.transform(features)
+
+def translate_matrix_to_mean_vector(matrix):
+    """Translate each row in the matrix to their mean values.
+
+    Args:
+        features: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature.
+
+    Returns:
+        - 1.: The vector of the mean values.
+    """
+    mean_vector = np.array([])
+    for row in matrix:
+        mean_vector = np.append(mean_vector, np.mean(row))
+    return mean_vector
+
+def drop_outliers(timestamps, features):
+    """Drop the outliers from the features. Also drops the related timestamps.
+
+    Args:
+        timestamps: The related timestamps.
+        features: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature.
+
+    Returns:
+        A tuple, with the following items.
+        - 1.: The timestamps without the dropped rows' timestamps.
+        - 2.: The features without the outliers.
+    """
+    # TODO
+    return timestamps, features
+
+def get_minutes_on_day(timestamps):
+    minutes = np.array([])
+    for timestamp in timestamps:
+        date = datetime.fromtimestamp(float(timestamp) / 1000.0)
+        minutes_on_day = 60 * date.hour + date.minute
+        minutes = np.append(minutes, minutes_on_day)
+    return minutes

@@ -26,7 +26,7 @@ def initialise():
     Parses the script's arguments. Based on that, it returns the initial parameters of the alogrithm.
 
     Returns:
-        A tupple, with the following elements.
+        A tuple, with the following elements.
         - 1.: List of the paths (as strings) of the training files.
         - 2.: List of the paths (as strings) of the testing files.
         - 3.: List of the squares (as ints) to analyze.

@@ -15,8 +15,27 @@ import numpy as np
 from datetime import datetime
 from scipy.interpolate import splev
 from scipy.interpolate import splrep
-from sklearn.preprocessing import MinMaxScaler
 from time import time
+
+"""
+ID for weekdays.
+"""
+WEEKDAYS = 'weekdays'
+
+"""
+ID for weekends.
+"""
+WEEKENDS = 'weekends'
+
+"""
+ID for timestamps.
+"""
+TIMESTAMPS = 'timestamps'
+
+"""
+ID for features.
+"""
+FEATURES = 'features'
 
 # constants
 MINUTES_PER_HOUR = 60
@@ -29,26 +48,7 @@ OUTLIER_CONTROL = 2
 
 trainingFiles, testingFiles, squares = initialise.initialise()
 
-# extend the given y matrix with the provided data
-def extendYMatrixWithData(yMatrix, data):
-    yNewRow = [data['sms_in'], data['sms_out'], data['call_in'], data['call_out'], data['internet_traffic']]
-    if yMatrix is None:
-        yMatrix = np.array(yNewRow)
-    else:
-        yMatrix = np.vstack([yMatrix, yNewRow])
-    return yMatrix
-
-# scale the given features to make them comparable
-def scaleFeatures(featureMatrix):
-    return MinMaxScaler().fit_transform(featureMatrix)
-
-# translate the rows of the given matrix into their mean values
-def translateRowsToTheirAverages(matrix):
-    meanVector = np.array([])
-    for row in matrix:
-        meanVector = np.append(meanVector, np.average(row))
-    return meanVector
-
+# TODO do I need this?
 # sort the first array, then the second with the same order as the first
 def sortArraysBasedOnTheFirst(first, second):
     order = np.argsort(first)
@@ -57,51 +57,41 @@ def sortArraysBasedOnTheFirst(first, second):
     return first, second
 
 # preprocess the given dataset and return the x and the y values
-def preprocessDataset(datasetFiles, isTesting=False):
+def preprocessDataset(datasetFiles):
     startTime = time()
-
     rawData = preprocess.read_files(datasetFiles, squares)
     cleanData = preprocess.group_data_by_time_interval(rawData)
-
-    # collect the x values and the y values for each row
-    x = np.array([])
-    xWeekend = np.array([])
-    yMatrix = None
-    yMatrixWeekend = None
-    for timestamp, properties in cleanData.items():
-        date = datetime.fromtimestamp(float(timestamp) / 1000.0)
-
-        minutes = MINUTES_PER_HOUR * date.hour + date.minute
-        if isTesting:
-            minutes += MINUTES_PER_DAY * (date.day - 1)
-
-        if date.weekday() < 5 and (not ((not isTesting) and date.day == 1)): # november 1 is a public holiday in Italy
-            x = np.append(x, minutes)
-            yMatrix = extendYMatrixWithData(yMatrix, properties)
-        else:
-            xWeekend = np.append(xWeekend, minutes)
-            yMatrixWeekend = extendYMatrixWithData(yMatrixWeekend, properties)
-
-    # scale the y metrices into (0,1) by column
-    yMatrix = scaleFeatures(yMatrix)
-    yMatrixWeekend = scaleFeatures(yMatrixWeekend)
-
-    # reduce the columns in the y matrices to 1, by calculating the average of each row
-    y = translateRowsToTheirAverages(yMatrix)
-    yWeekend = translateRowsToTheirAverages(yMatrixWeekend)
-
-    # sort the values by the timestamp
-    x, y = sortArraysBasedOnTheFirst(x, y)
-    xWeekend, yWeekend = sortArraysBasedOnTheFirst(xWeekend, yWeekend)
-
+    timestamps, features = preprocess.split_data_for_timestamps_and_features(cleanData)
+    weekdays, weekends = preprocess.split_data_for_weekdays_and_weekends(timestamps, features)
+    categories = { WEEKDAYS: weekdays, WEEKENDS: weekends }
+    for category_name, category in categories.items():
+        category[FEATURES] = preprocess.scale_features(category[FEATURES])
+        category[FEATURES] = preprocess.translate_matrix_to_mean_vector(category[FEATURES]) # TODO this should depend on an input parameter
     print('Time for preprocess a dataset: ', round(time() - startTime, 3), ' sec')
-    return x, y, xWeekend, yWeekend
+    return categories
 
-# preprocess the training dataset
-xTraining, yTraining, xWeekendTraining, yWeekendTraining = preprocessDataset(trainingFiles)
+trainingData = preprocessDataset(trainingFiles)
+for category_name, category in trainingData.items():
+    category[TIMESTAMPS] = preprocess.get_minutes_on_day(category[TIMESTAMPS])
+    category[TIMESTAMPS], category[FEATURES] = sortArraysBasedOnTheFirst(category[TIMESTAMPS], category[FEATURES])
 
-# preprocess the testing dataset
-xTesting, yTesting, xWeekendTesting, yWeekendTesting = preprocessDataset(testingFiles, isTesting=True)
+testingData = preprocessDataset(testingFiles)
+for category_name, category in testingData.items():
+    category[TIMESTAMPS], category[FEATURES] = sortArraysBasedOnTheFirst(category[TIMESTAMPS], category[FEATURES])
+
+xTraining = trainingData[WEEKDAYS][TIMESTAMPS]
+yTraining = trainingData[WEEKDAYS][FEATURES]
+xWeekendTraining = trainingData[WEEKENDS][TIMESTAMPS]
+yWeekendTraining = trainingData[WEEKENDS][FEATURES]
+
+xTesting = testingData[WEEKDAYS][TIMESTAMPS]
+yTesting = testingData[WEEKDAYS][FEATURES]
+xWeekendTesting = testingData[WEEKENDS][TIMESTAMPS]
+yWeekendTesting = testingData[WEEKENDS][FEATURES]
+
+# remove the duplicates from the trainig x vectors
+xTrainingUnique = np.unique(xTraining)
+xWeekendTrainingUnique = np.unique(xWeekendTraining)
 
 # create a interpolation polynomial based on the given x and y values
 def createInterpolationPolynomial(x, y):
@@ -109,10 +99,6 @@ def createInterpolationPolynomial(x, y):
     x = np.linspace(np.amin(x), np.amax(x), SPLINE_X_SAMPLES)
     y = splev(x, interpolationPolynomial)
     return x, y
-
-# remove the duplicates from the trainig x vectors
-xTrainingUnique = np.unique(xTraining)
-xWeekendTrainingUnique = np.unique(xWeekendTraining)
 
 # drop the outliers from the given dataset
 def dropOutliers(dataset):
@@ -130,7 +116,7 @@ def createAverageForEachTimestamp(timestamps, values):
         if currentTimstamp < timestamp:
             # add the average of the collected y values
             yCurrentValues = dropOutliers(yCurrentValues)
-            yTrainingAverage = np.append(yTrainingAverage, np.mean(yCurrentValues))
+            yTrainingAverage = np.append(yTrainingAverage, np.average(yCurrentValues))
             # prepare for the new timestamp
             currentTimstamp = timestamp
             yCurrentValues = np.array([])
@@ -168,6 +154,9 @@ def plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrai
     yDay = None
     currentDay = 0
     for index, minutes in enumerate(xTesting):
+        date = datetime.fromtimestamp(float(minutes) / 1000.0)
+        minutes = MINUTES_PER_HOUR * date.hour + date.minute
+        minutes += MINUTES_PER_DAY * (date.day - 1)
         day = int(int(minutes) / int(24 * 60) + 1)
         if currentDay < day: # if we collected all data for a day (assume that the minutes are in ascending order)
             if currentDay > 0: # skip day zero
