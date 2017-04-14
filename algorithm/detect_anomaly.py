@@ -1,62 +1,41 @@
 # TODO Hogyan kéne még fejleszteni a tranininget:
 # - A kódminőséget javítani ezek szerint: https://www.python.org/dev/peps/pep-0008/, https://www.python.org/dev/peps/pep-0257/, https://google.github.io/styleguide/pyguide.html, pylint. (Package vs module vs class.) Ezekkel együtt modularizálni az algoritmust:
 #   * A kód csak azokat a hibákat kezeli le, amiket ki is tud javítani. Ha valamit nem tud, vagy olyan állapotba kerül, hogy biztos nem fog tudni értelmes outputot létrehozni, akkor != 0 exit kóddal kilép.
-#   * Preprocessor module. A preprocessDataset function feladatait veszi át.
-#   * ...
 # - A country code segítségével csinálni egy új feature-t.
 # - Ahelyett, hogy az összes feature-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni.
 # - PCA-t használni.
 
-import initialise
-import preprocess
-import constant
+from datetime import datetime
+from time import time
 
 import matplotlib.pyplot as plot
 import numpy as np
-from datetime import datetime
 from scipy.interpolate import splev
 from scipy.interpolate import splrep
-from time import time
 
-# parameters
+import constant
+import initialise
+import preprocess
+
+# TODO parameters
 SPLINE_DEGREE = 3
 SPLINE_X_SAMPLES = 1440
 OUTLIER_CONTROL = 2
 
-trainingFiles, testingFiles, squares = initialise.initialise()
+print('Initialize the algorithm...')
+start_time = time()
+training_files, testing_files, squares = initialise.initialise()
+print('Done to initialze the algorithm. Time: ', round(time() - start_time, 3), ' sec')
 
-# preprocess the given dataset and return the x and the y values
-def preprocessDataset(datasetFiles):
-    startTime = time()
-    rawData = preprocess.read_files(datasetFiles, squares)
-    cleanData = preprocess.group_data_by_time_interval(rawData)
-    timestamps, features = preprocess.split_data_for_timestamps_and_features(cleanData)
-    weekdays, weekends = preprocess.split_data_for_weekdays_and_weekends(timestamps, features)
-    categories = { constant.WEEKDAYS: weekdays, constant.WEEKENDS: weekends }
-    for category_name, category in categories.items():
-        category[constant.FEATURES] = preprocess.scale_features(category[constant.FEATURES])
-        category[constant.FEATURES] = preprocess.translate_matrix_to_mean_vector(category[constant.FEATURES]) # TODO this should depend on an input parameter
-    print('Time for preprocess a dataset: ', round(time() - startTime, 3), ' sec')
-    return categories
+print('Preprocess the training dataset...')
+start_time = time()
+training_data = preprocess.preprocess_dataset(training_files, squares, isTraining=True)
+print('Done to preprocess the training dataset. Time: ', round(time() - start_time, 3), ' sec')
 
-trainingData = preprocessDataset(trainingFiles)
-for category_name, category in trainingData.items():
-    category[constant.TIMESTAMPS] = preprocess.get_minutes(category[constant.TIMESTAMPS])
-    category[constant.TIMESTAMPS], category[constant.FEATURES] = preprocess.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
-
-testingData = preprocessDataset(testingFiles)
-for category_name, category in testingData.items():
-    category[constant.TIMESTAMPS], category[constant.FEATURES] = preprocess.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
-
-xTraining = trainingData[constant.WEEKDAYS][constant.TIMESTAMPS]
-yTraining = trainingData[constant.WEEKDAYS][constant.FEATURES]
-xWeekendTraining = trainingData[constant.WEEKENDS][constant.TIMESTAMPS]
-yWeekendTraining = trainingData[constant.WEEKENDS][constant.FEATURES]
-
-xTesting = testingData[constant.WEEKDAYS][constant.TIMESTAMPS]
-yTesting = testingData[constant.WEEKDAYS][constant.FEATURES]
-xWeekendTesting = testingData[constant.WEEKENDS][constant.TIMESTAMPS]
-yWeekendTesting = testingData[constant.WEEKENDS][constant.FEATURES]
+xTraining = training_data[constant.WEEKDAYS][constant.TIMESTAMPS]
+yTraining = training_data[constant.WEEKDAYS][constant.FEATURES]
+xWeekendTraining = training_data[constant.WEEKENDS][constant.TIMESTAMPS]
+yWeekendTraining = training_data[constant.WEEKENDS][constant.FEATURES]
 
 # remove the duplicates from the trainig x vectors
 xTrainingUnique = np.unique(xTraining)
@@ -137,6 +116,13 @@ def plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrai
         # collect the day's data
         xDay = np.append(xDay, minutes - (day - 1) * constant.MINUTES_PER_DAY)
         yDay = np.append(yDay, yTesting[index])
+
+
+testing_data = preprocess.preprocess_dataset(testing_files, squares)
+xTesting = testing_data[constant.WEEKDAYS][constant.TIMESTAMPS]
+yTesting = testing_data[constant.WEEKDAYS][constant.FEATURES]
+xWeekendTesting = testing_data[constant.WEEKENDS][constant.TIMESTAMPS]
+yWeekendTesting = testing_data[constant.WEEKENDS][constant.FEATURES]
 
 # walk through each day in the testing dataset and show each day's data and the November's avarage data in a plot
 plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial)

@@ -8,64 +8,20 @@ from datetime import datetime
 import numpy as np
 from sklearn import preprocessing
 
+import common_function
 import constant
-
-"""
-ID for the square ID column.
-"""
-COLUMN_SQUARE_ID = 'square_id'
-
-"""
-ID for the time interval column.
-"""
-COLUMN_TIME_INTERVAL = 'time_interval'
-
-"""
-ID for the country code column.
-"""
-COLUMN_COUNTRY_CODE = 'country_code'
-
-"""
-ID for the incoming SMS column.
-"""
-COLUMN_SMS_IN = 'sms_in'
-
-"""
-ID for the outgoing SMS column.
-"""
-COLUMN_SMS_OUT = 'sms_out'
-
-"""
-ID for the incoming call column.
-"""
-COLUMN_CALL_IN = 'call_in'
-
-"""
-ID for the outgoing call column.
-"""
-COLUMN_CALL_OUT = 'call_out'
-
-"""
-ID for the internet traffic column.
-"""
-COLUMN_INTERNET_TRAFFIC = 'internet_traffic'
-
-"""
-ID for the foreign activity column.
-"""
-COLUMN_FOREIGN = 'foreign'
 
 """
 IDs of the columns of the data, ordered as the input data rows.
 """
-COLUMNS = (COLUMN_SQUARE_ID, COLUMN_TIME_INTERVAL, COLUMN_COUNTRY_CODE, COLUMN_SMS_IN, COLUMN_SMS_OUT, COLUMN_CALL_IN, COLUMN_CALL_OUT, COLUMN_INTERNET_TRAFFIC)
+_COLUMNS = (constant.FEATURE_SQUARE_ID, constant.FEATURE_TIME_INTERVAL, constant.FEATURE_COUNTRY_CODE, constant.FEATURE_SMS_IN, constant.FEATURE_SMS_OUT, constant.FEATURE_CALL_IN, constant.FEATURE_CALL_OUT, constant.FEATURE_INTERNET_TRAFFIC)
 
 """
 The scaler for the feature scaling.
 """
 _SCALER = None
 
-def read_files(files, squares):
+def _read_files(files, squares):
     """Reades the given files and collect the data for the specified squares.
 
     Args:
@@ -73,79 +29,63 @@ def read_files(files, squares):
         squares: The squares to read. It must be a collection of ints.
 
     Returns:
-        The list of the read rows, where each item is a dictinary, where the keys are specified in the COLUMNS constant.
+        The list of the read rows, where each item is a dictinary, where the keys are specified in the _COLUMNS constant.
     """
     data = []
     for file in files:
         # FIXME a hack to fasten the file reader
         with open(file) as tsv_file:
-            tsv_reader = csv.DictReader(tsv_file, delimiter='\t', fieldnames=COLUMNS)
+            tsv_reader = csv.DictReader(tsv_file, delimiter='\t', fieldnames=_COLUMNS)
             last_read_square_id = -1
             counter = -1
             for row in tsv_reader:
-                if last_read_square_id != int(row[COLUMN_SQUARE_ID]): # assume that the values for a square are groupped together
+                if last_read_square_id != int(row[constant.FEATURE_SQUARE_ID]): # assume that the values for a square are groupped together
                     counter += 1
                     if counter < len(squares):
-                        last_read_square_id = int(row[COLUMN_SQUARE_ID])
+                        last_read_square_id = int(row[constant.FEATURE_SQUARE_ID])
                     else:
                         break
                 data.append(row)
         # FIXME this should be the implementation, but it requires much more time to run. i can optimize this a little
         # with open(file) as tsv_file:
         #     print('Reading ' + file)
-        #     tsv_reader = csv.DictReader(tsvFile, delimiter='\t', fieldnames=COLUMNS)
+        #     tsv_reader = csv.DictReader(tsvFile, delimiter='\t', fieldnames=_COLUMNS)
         #     for row in tsv_reader:
         #         for square in squares:
-        #             if int(row[COLUMN_SQUARE_ID]) == square:
+        #             if int(row[constant.FEATURE_SQUARE_ID]) == square:
         #                 data.append(row)
     return data
 
-def group_data_by_time_interval(data):
+def _group_data_by_time_interval(data):
     """Group the given data by the timestamps.
 
     It summarises the values for each property for the same timestamp, except the country code. Instead of the country
     code, it calculates the activities for the foreign countries.
 
     Args:
-        data: The data as a list of dictionaries, where the keys are the COLUMN_* globals.
+        data: The data as a list of dictionaries, where the keys are the FEATURE_* constants.
 
     Returns:
-        The grouped data as a dictinary, where the keys are the timestamps and the values are the properties for a timestamp as a dictinary. The latter's keys are the following globals: COLUMN_SMS_IN, COLUMN_SMS_OUT, COLUMN_CALL_IN, COLUMN_CALL_OUT, COLUMN_INTERNET_TRAFFIC, COLUMN_FOREIGN.
+        The grouped data as a dictinary, where the keys are the timestamps and the values are the properties for a timestamp as a dictinary. The latter's keys are the following globals: constant.FEATURE_SMS_IN, constant.FEATURE_SMS_OUT, constant.FEATURE_CALL_IN, constant.FEATURE_CALL_OUT, constant.FEATURE_INTERNET_TRAFFIC, constant.FEATURE_FOREIGN.
     """
     grouped_data = {}
     for row in data:
-        time_interval = row[COLUMN_TIME_INTERVAL]
+        time_interval = row[constant.FEATURE_TIME_INTERVAL]
         if time_interval in grouped_data:
             for prop in grouped_data[time_interval]:
                 grouped_data[time_interval][prop] += float(row[prop]) if row[prop] else 0.
         else:
             grouped_data[time_interval] = {
-                COLUMN_SMS_IN : float(row[COLUMN_SMS_IN]) if row[COLUMN_SMS_IN] else 0.,
-                COLUMN_SMS_OUT : float(row[COLUMN_SMS_OUT]) if row[COLUMN_SMS_OUT] else 0.,
-                COLUMN_CALL_IN : float(row[COLUMN_CALL_IN]) if row[COLUMN_CALL_IN] else 0.,
-                COLUMN_CALL_OUT : float(row[COLUMN_CALL_OUT]) if row[COLUMN_CALL_OUT] else 0.,
-                COLUMN_INTERNET_TRAFFIC : float(row[COLUMN_INTERNET_TRAFFIC]) if row[COLUMN_INTERNET_TRAFFIC] else 0.,
+                constant.FEATURE_SMS_IN : float(row[constant.FEATURE_SMS_IN]) if row[constant.FEATURE_SMS_IN] else 0.,
+                constant.FEATURE_SMS_OUT : float(row[constant.FEATURE_SMS_OUT]) if row[constant.FEATURE_SMS_OUT] else 0.,
+                constant.FEATURE_CALL_IN : float(row[constant.FEATURE_CALL_IN]) if row[constant.FEATURE_CALL_IN] else 0.,
+                constant.FEATURE_CALL_OUT : float(row[constant.FEATURE_CALL_OUT]) if row[constant.FEATURE_CALL_OUT] else 0.,
+                constant.FEATURE_INTERNET_TRAFFIC : float(row[constant.FEATURE_INTERNET_TRAFFIC]) if row[constant.FEATURE_INTERNET_TRAFFIC] else 0.,
             }
-            # TODO add COLUMN_FOREIGN
+            # TODO add constant.FEATURE_FOREIGN
     return grouped_data
 
-def _add_row(matrix, new_row):
-    """Add the new_row to the matrix.
-
-    Args:
-        matrix: The matrix to extend.
-        new_row: The new row to add the end of the matrix.
-
-    Returns:
-        The extended matrix.
-    """
-    if matrix is None:
-        matrix = np.array(new_row)
-    else:
-        matrix = np.vstack([matrix, new_row])
-    return matrix
-
-def split_data_for_timestamps_and_features(data):
+def _split_data_for_timestamps_and_features(data):
     """Split the data for timestamps and features.
 
     Args:
@@ -160,11 +100,11 @@ def split_data_for_timestamps_and_features(data):
     features = None
     for timestamp, properties in data.items():
         timestamps = np.append(timestamps, timestamp)
-        new_row = [properties[COLUMN_SMS_IN], properties[COLUMN_SMS_OUT], properties[COLUMN_CALL_IN], properties[COLUMN_CALL_OUT], properties[COLUMN_INTERNET_TRAFFIC]]
-        features = _add_row(features, new_row)
+        new_row = [properties[constant.FEATURE_SMS_IN], properties[constant.FEATURE_SMS_OUT], properties[constant.FEATURE_CALL_IN], properties[constant.FEATURE_CALL_OUT], properties[constant.FEATURE_INTERNET_TRAFFIC]]
+        features = common_function.add_row_to_matrix(features, new_row)
     return timestamps, features
 
-def split_data_for_weekdays_and_weekends(timestamps, features):
+def _split_data_for_weekdays_and_weekends(timestamps, features):
     """Split the data for weekdays and weekends.
 
     Args:
@@ -184,13 +124,13 @@ def split_data_for_weekdays_and_weekends(timestamps, features):
         date = datetime.fromtimestamp(float(timestamp) / 1000.)
         if date.weekday() < 5:
             weekday_timestamps = np.append(weekday_timestamps, timestamp)
-            weekday_features = _add_row(weekday_features, features[index])
+            weekday_features = common_function.add_row_to_matrix(weekday_features, features[index])
         else:
             weekend_timestamps = np.append(weekend_timestamps, timestamp)
-            weekend_features = _add_row(weekend_features, features[index])
+            weekend_features = common_function.add_row_to_matrix(weekend_features, features[index])
     return { constant.TIMESTAMPS: weekday_timestamps, constant.FEATURES: weekday_features }, { constant.TIMESTAMPS: weekend_timestamps, constant.FEATURES: weekend_features }
 
-def scale_features(features):
+def _scale_features(features):
     """Scale the features with a min-max scaler. It is saving the firstly created scaler and use it as a transformer every time.
 
     Args:
@@ -204,7 +144,7 @@ def scale_features(features):
         _SCALER = preprocessing.MinMaxScaler().fit(features)
     return _SCALER.transform(features)
 
-def translate_matrix_to_mean_vector(matrix):
+def _translate_matrix_to_mean_vector(matrix):
     """Translate each row in the matrix to their mean values.
 
     Args:
@@ -218,48 +158,40 @@ def translate_matrix_to_mean_vector(matrix):
         mean_vector = np.append(mean_vector, np.mean(row))
     return mean_vector
 
-def drop_outliers(timestamps, features):
-    """Drop the outliers from the features. Also drops the related timestamps.
+def preprocess_dataset(dataset_files, squares, isTraining = False):
+    """Preprocess the given dataset.
+
+    1. Reads the files.
+    2. Group by time interval.
+    3. Split to timestamps and features.
+    4. Split to weekdays and weekends.
+    5. Scale.
+    6. Select and convert the specified features.
+    7. If it's a training dataset, convert timestamps to the passed minutes each day.
+    8. Sort the arrays based on the timestamps.
+    If the dataset is large, it will run for a while.
 
     Args:
-        timestamps: The related timestamps.
-        features: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature.
+        dataset_files: List of the paths of the dataset files.
+        squares: The squares to read.
+        isTraining: Indicates if it's a training dataset or not. False by default.
 
     Returns:
-        A tuple, with the following items.
-        - 1.: The timestamps without the dropped rows' timestamps.
-        - 2.: The features without the outliers.
+        The processed dataset as a dictionary, with the following schema:
+        {
+            constant.WEEKDAYS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] },
+            constant.WEEKENDS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }
+        }
     """
-    # TODO
-    return timestamps, features
-
-def get_minutes(timestamps):
-    """Calculates how many minutes passed that day.
-
-    Args:
-        timestamps: The timestamp (milliseconds).
-
-    Returns:
-        The number of minutes that passed that day.
-    """
-    minutes = np.array([])
-    for timestamp in timestamps:
-        date = datetime.fromtimestamp(float(timestamp) / 1000.0)
-        minutes_passed_that_day = constant.MINUTES_PER_HOUR * date.hour + date.minute
-        minutes = np.append(minutes, minutes_passed_that_day)
-    return minutes
-
-def sort_arrays_based_on_the_first(first_array, second_array):
-    """Sort the first array then the second in the same order as the first.
-
-    Args:
-        first_array: The first array to sort.
-        second_arrays: The second array to sort.
-
-    Returns:
-        A tuple with the sorted first and second array.
-    """
-    order = np.argsort(first_array)
-    first_array = np.array(first_array)[order]
-    second_array = np.array(second_array)[order]
-    return first_array, second_array
+    data = _read_files(dataset_files, squares)
+    data = _group_data_by_time_interval(data)
+    timestamps, features = _split_data_for_timestamps_and_features(data)
+    weekdays, weekends = _split_data_for_weekdays_and_weekends(timestamps, features)
+    categories = { constant.WEEKDAYS: weekdays, constant.WEEKENDS: weekends }
+    for category_name, category in categories.items():
+        category[constant.FEATURES] = _scale_features(category[constant.FEATURES])
+        category[constant.FEATURES] = _translate_matrix_to_mean_vector(category[constant.FEATURES]) # TODO this should depend on an input parameter
+        if isTraining:
+            category[constant.TIMESTAMPS] = common_function.get_minutes(category[constant.TIMESTAMPS])
+        category[constant.TIMESTAMPS], category[constant.FEATURES] = common_function.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
+    return categories

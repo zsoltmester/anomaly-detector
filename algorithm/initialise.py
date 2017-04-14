@@ -3,22 +3,8 @@ Utility functions for the anomaly detector to initialise the algorithm.
 """
 
 import argparse
-import os
 
-def _collect_files_in_dir(dir):
-    """Collects the files in the given directory.
-
-    Args:
-        dir: Directory.
-
-    Returns:
-        The list of the collected files' paths.
-    """
-
-    files = []
-    for (dir_path, dir_names, file_names) in os.walk(dir):
-        files.extend([os.path.join(dir_path, file_name) for file_name in file_names])
-    return files
+import common_function
 
 def initialise():
     """Initialises the algorithm's parameters.
@@ -40,10 +26,10 @@ def initialise():
     args = vars(parser.parse_args())
 
     training_files_root = args['training']
-    training_files = _collect_files_in_dir(training_files_root)
+    training_files = common_function.collect_files_in_dir(training_files_root)
 
     testing_files_root = args['testing']
-    testing_files = _collect_files_in_dir(testing_files_root)
+    testing_files = common_function.collect_files_in_dir(testing_files_root)
 
     number_of_squares = args['squares']
     squares = list(range(1, number_of_squares + 1))
