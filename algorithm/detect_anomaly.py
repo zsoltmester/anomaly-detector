@@ -10,17 +10,11 @@ from time import time
 
 import matplotlib.pyplot as plot
 import numpy as np
-from scipy.interpolate import splev
-from scipy.interpolate import splrep
 
 import constant
 import initialise
+import interpolate
 import preprocess
-
-# TODO parameters
-SPLINE_DEGREE = 3
-SPLINE_X_SAMPLES = 1440
-OUTLIER_CONTROL = 2
 
 print('Initialize the algorithm...')
 start_time = time()
@@ -41,12 +35,7 @@ yWeekendTraining = training_data[constant.WEEKENDS][constant.FEATURES]
 xTrainingUnique = np.unique(xTraining)
 xWeekendTrainingUnique = np.unique(xWeekendTraining)
 
-# create a interpolation polynomial based on the given x and y values
-def createInterpolationPolynomial(x, y):
-    interpolationPolynomial = splrep(x, y, k=SPLINE_DEGREE)
-    x = np.linspace(np.amin(x), np.amax(x), SPLINE_X_SAMPLES)
-    y = splev(x, interpolationPolynomial)
-    return x, y
+OUTLIER_CONTROL = 2
 
 # drop the outliers from the given dataset
 def dropOutliers(dataset):
@@ -77,18 +66,18 @@ yTrainingAverage = createAverageForEachTimestamp(xTraining, yTraining)
 yWeekendTrainingAverage = createAverageForEachTimestamp(xWeekendTraining, yWeekendTraining)
 
 # create the interpolation polynomials based on the training dataset
-xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial = createInterpolationPolynomial(xTrainingUnique, yTrainingAverage)
-xWeekendTrainingInterpolationPolynomial, yWeekendTrainingInterpolationPolynomial = createInterpolationPolynomial(xWeekendTrainingUnique, yWeekendTrainingAverage)
+training_weekday_interpolation_polynomial = interpolate.create_interpolation_polynomial(xTrainingUnique, yTrainingAverage)
+training_weekend_interpolation_polynomial = interpolate.create_interpolation_polynomial(xWeekendTrainingUnique, yWeekendTrainingAverage)
 
 # show the given day's data and the November's avarage data in a plot
-def showPlotForDay(xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial, day, xDay, yDay):
+def showPlotForDay(xTraining, yTraining, xTrainingUnique, yTrainingAverage, training_interpolation_polynomial, day, xDay, yDay):
     plot.scatter(xTraining, yTraining, color='silver', label='data points for November')
     plot.scatter(xTrainingUnique, yTrainingAverage, color='gray', label='avarage data points for November')
-    plot.plot(xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial, color='black', label='interpolation polynomial for November')
+    plot.plot(training_interpolation_polynomial[constant.X], training_interpolation_polynomial[constant.Y], color='black', label='interpolation polynomial for November')
 
     plot.scatter(xDay, yDay, color='salmon', label='data points for December '+str(day))
-    xDayInterpolationPolynomial, yDayInterpolationPolynomial = createInterpolationPolynomial(xDay, yDay)
-    plot.plot(xDayInterpolationPolynomial, yDayInterpolationPolynomial, color='red', label='interpolation polynomial for December '+str(day))
+    day_interpolation_polynomial = interpolate.create_interpolation_polynomial(xDay, yDay)
+    plot.plot(day_interpolation_polynomial[constant.X], day_interpolation_polynomial[constant.Y], color='red', label='interpolation polynomial for December ' + str(day))
 
     plot.xlabel('time in minutes')
     plot.ylabel('activity')
@@ -97,7 +86,7 @@ def showPlotForDay(xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTra
     plot.show()
 
 # plot the results
-def plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial):
+def plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrainingAverage, training_interpolation_polynomial):
     xDay = None
     yDay = None
     currentDay = 0
@@ -108,7 +97,7 @@ def plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrai
         day = int(int(minutes) / int(24 * 60) + 1)
         if currentDay < day: # if we collected all data for a day (assume that the minutes are in ascending order)
             if currentDay > 0: # skip day zero
-                showPlotForDay(xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial, currentDay, xDay, yDay)
+                showPlotForDay(xTraining, yTraining, xTrainingUnique, yTrainingAverage, training_interpolation_polynomial, currentDay, xDay, yDay)
             # prepare for the new day
             currentDay = day
             xDay = np.array([])
@@ -125,5 +114,5 @@ xWeekendTesting = testing_data[constant.WEEKENDS][constant.TIMESTAMPS]
 yWeekendTesting = testing_data[constant.WEEKENDS][constant.FEATURES]
 
 # walk through each day in the testing dataset and show each day's data and the November's avarage data in a plot
-plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrainingAverage, xTrainingInterpolationPolynomial, yTrainingInterpolationPolynomial)
-plotResults(xWeekendTesting, yWeekendTesting, xWeekendTraining, yWeekendTraining, xWeekendTrainingUnique, yWeekendTrainingAverage, xWeekendTrainingInterpolationPolynomial, yWeekendTrainingInterpolationPolynomial)
+plotResults(xTesting, yTesting, xTraining, yTraining, xTrainingUnique, yTrainingAverage, training_weekday_interpolation_polynomial)
+plotResults(xWeekendTesting, yWeekendTesting, xWeekendTraining, yWeekendTraining, xWeekendTrainingUnique, yWeekendTrainingAverage, training_weekend_interpolation_polynomial)

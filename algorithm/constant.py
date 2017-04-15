@@ -73,6 +73,16 @@ ID for features.
 FEATURES = 'features'
 
 """
+ID x axis.
+"""
+X = 'x'
+
+"""
+ID y axis.
+"""
+Y = 'y'
+
+"""
 Constant for how many minutes is a hour.
 """
 MINUTES_PER_HOUR = 60
