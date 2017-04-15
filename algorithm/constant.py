@@ -63,6 +63,11 @@ ID for weekends.
 WEEKENDS = 'weekends'
 
 """
+ID for day.
+"""
+DAY = 'day'
+
+"""
 ID for timestamps.
 """
 TIMESTAMPS = 'timestamps'

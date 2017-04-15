@@ -6,6 +6,7 @@ import argparse
 
 import common_function
 
+
 def initialise():
     """Initialises the algorithm's parameters.
 
@@ -21,7 +22,7 @@ def initialise():
     parser = argparse.ArgumentParser(description='The algorithm for the anomaly detector application.')
     parser.add_argument('--training', help='Path to the root directory of the training dataset.', required=True)
     parser.add_argument('--testing', help='Path to the root directory of the testing dataset.', required=True)
-    parser.add_argument('-s','--squares', type=int, help='The number of squares to analyze, from 1 to the given value.', required=True)
+    parser.add_argument('-s', '--squares', type=int, help='The number of squares to analyze, from 1 to the given value.', required=True)
 
     args = vars(parser.parse_args())
 
