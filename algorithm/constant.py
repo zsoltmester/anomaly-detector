@@ -5,52 +5,47 @@ Common constants.
 """
 ID for the square ID feature.
 """
-FEATURE_SQUARE_ID = 'square_id'
+FEATURE_SQUARE_ID = 'square-id'
 
 """
 ID for the time interval feature.
 """
-FEATURE_TIME_INTERVAL = 'time_interval'
+FEATURE_TIME_INTERVAL = 'time-interval'
 
 """
 ID for the country code feature.
 """
-FEATURE_COUNTRY_CODE = 'country_code'
+FEATURE_COUNTRY_CODE = 'country-code'
 
 """
 ID for the incoming SMS feature.
 """
-FEATURE_SMS_IN = 'sms_in'
+FEATURE_SMS_IN = 'sms-in'
 
 """
 ID for the outgoing SMS feature.
 """
-FEATURE_SMS_OUT = 'sms_out'
+FEATURE_SMS_OUT = 'sms-out'
 
 """
 ID for the incoming call feature.
 """
-FEATURE_CALL_IN = 'call_in'
+FEATURE_CALL_IN = 'call-in'
 
 """
 ID for the outgoing call feature.
 """
-FEATURE_CALL_OUT = 'call_out'
+FEATURE_CALL_OUT = 'call-out'
 
 """
 ID for the internet traffic feature.
 """
-FEATURE_INTERNET_TRAFFIC = 'internet_traffic'
+FEATURE_INTERNET = 'internet'
 
 """
 ID for the foreign activity feature.
 """
 FEATURE_FOREIGN = 'foreign'
-
-"""
-ID for the overall activity feature.
-"""
-FEATURE_OVERALL_ACTIVITY = 'overall_activity'
 
 """
 ID for weekdays.

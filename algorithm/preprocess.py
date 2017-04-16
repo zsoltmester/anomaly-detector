@@ -14,7 +14,7 @@ import constant
 """
 IDs of the columns of the data, ordered as the input data rows.
 """
-_COLUMNS = (constant.FEATURE_SQUARE_ID, constant.FEATURE_TIME_INTERVAL, constant.FEATURE_COUNTRY_CODE, constant.FEATURE_SMS_IN, constant.FEATURE_SMS_OUT, constant.FEATURE_CALL_IN, constant.FEATURE_CALL_OUT, constant.FEATURE_INTERNET_TRAFFIC)
+_COLUMNS = (constant.FEATURE_SQUARE_ID, constant.FEATURE_TIME_INTERVAL, constant.FEATURE_COUNTRY_CODE, constant.FEATURE_SMS_IN, constant.FEATURE_SMS_OUT, constant.FEATURE_CALL_IN, constant.FEATURE_CALL_OUT, constant.FEATURE_INTERNET)
 
 """
 The scaler for the feature scaling.
@@ -27,16 +27,18 @@ A constant that controls how many outliers we will drop.
 _OUTLIER_CONTROL = 1.75
 
 
-def read_files(files, squares):
+def read_files(files, squares, features):
     """Reades the given files and collect the data for the specified squares.
 
     Args:
         files: Paths to the files. It must be an iterable on strings.
         squares: The squares to read. It must be a collection of ints.
+        features: The ID of the features to read.
 
     Returns:
-        The list of the read rows, where each item is a dictinary, where the keys are specified in the _COLUMNS constant.
+        The list of the read rows, where each item is a dictinary, where the keys are the constant.FEATURE_* global constants.
     """
+    features.extend([constant.FEATURE_SQUARE_ID, constant.FEATURE_TIME_INTERVAL, constant.FEATURE_COUNTRY_CODE])
     data = []
     for file in files:
         # FIXME a hack to fasten the file reader
@@ -51,7 +53,11 @@ def read_files(files, squares):
                         last_read_square_id = int(row[constant.FEATURE_SQUARE_ID])
                     else:
                         break
-                data.append(row)
+                new_row = {}
+                for key, value in row.items():
+                    if key in features:
+                        new_row[key] = value
+                data.append(new_row)
         # this should be the implementation, but it requires much more time to run. I can optimize this a little
         # with open(file) as tsv_file:
         #     print('Reading ' + file)
@@ -86,10 +92,10 @@ def group_data_by_time_interval(data):
     code, it calculates the activities for the foreign countries.
 
     Args:
-        data: The data as a list of dictionaries, where the keys are the FEATURE_* constants.
+        data: The data as a list of dictionaries, where the keys are the constant.FEATURE_*  global constants.
 
     Returns:
-        The grouped data as a dictinary, where the keys are the timestamps and the values are the properties for a timestamp as a dictinary. The latter's keys are the following globals: constant.FEATURE_SMS_IN, constant.FEATURE_SMS_OUT, constant.FEATURE_CALL_IN, constant.FEATURE_CALL_OUT, constant.FEATURE_INTERNET_TRAFFIC, constant.FEATURE_FOREIGN.
+        The grouped data as a dictinary, where the keys are the timestamps and the values are the properties for a timestamp as a dictinary. The latter's keys are the constant.FEATURE_* global constants.
     """
     grouped_data = {}
     for row in data:
@@ -98,13 +104,12 @@ def group_data_by_time_interval(data):
             for prop in grouped_data[time_interval]:
                 grouped_data[time_interval][prop] += get_value_from_row(row, prop)
         else:
-            grouped_data[time_interval] = {
-                constant.FEATURE_SMS_IN: get_value_from_row(row, constant.FEATURE_SMS_IN),
-                constant.FEATURE_SMS_OUT: get_value_from_row(row, constant.FEATURE_SMS_OUT),
-                constant.FEATURE_CALL_IN: get_value_from_row(row, constant.FEATURE_CALL_IN),
-                constant.FEATURE_CALL_OUT: get_value_from_row(row, constant.FEATURE_CALL_OUT),
-                constant.FEATURE_INTERNET_TRAFFIC: get_value_from_row(row, constant.FEATURE_INTERNET_TRAFFIC),
-            }
+            del row[constant.FEATURE_SQUARE_ID]
+            del row[constant.FEATURE_TIME_INTERVAL]
+            del row[constant.FEATURE_COUNTRY_CODE]
+            grouped_data[time_interval] = {}
+            for prop in row:
+                grouped_data[time_interval][prop] = get_value_from_row(row, prop)
     return grouped_data
 
 
@@ -123,7 +128,9 @@ def split_data_for_timestamps_and_features(data):
     features = None
     for timestamp, properties in data.items():
         timestamps = np.append(timestamps, timestamp)
-        new_row = [properties[constant.FEATURE_SMS_IN], properties[constant.FEATURE_SMS_OUT], properties[constant.FEATURE_CALL_IN], properties[constant.FEATURE_CALL_OUT], properties[constant.FEATURE_INTERNET_TRAFFIC]]
+        new_row = []
+        for _, value in properties.items():
+            new_row.append(value)
         features = common_function.add_row_to_matrix(features, new_row)
     return timestamps, features
 
@@ -185,7 +192,7 @@ def translate_matrix_to_mean_vector(matrix):
     return mean_vector
 
 
-def preprocess_dataset(dataset_files, squares, is_training=False):
+def preprocess_dataset(dataset_files, squares, features, is_training=False):
     """Preprocess the given dataset.
 
     1. Reads the files.
@@ -201,6 +208,7 @@ def preprocess_dataset(dataset_files, squares, is_training=False):
     Args:
         dataset_files: List of the paths of the dataset files.
         squares: The squares to read.
+        features: Which features to keep. The valid values are the constant.FEATURE_* global constants.
         is_training: Indicates if it's a training dataset or not. False by default.
 
     Returns:
@@ -210,7 +218,7 @@ def preprocess_dataset(dataset_files, squares, is_training=False):
             constant.WEEKENDS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }
         }
     """
-    data = read_files(dataset_files, squares)
+    data = read_files(dataset_files, squares, features)
     data = group_data_by_time_interval(data)
     timestamps, features = split_data_for_timestamps_and_features(data)
     weekdays, weekends = split_data_for_weekdays_and_weekends(timestamps, features)

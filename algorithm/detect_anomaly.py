@@ -3,9 +3,7 @@ The main script for the algorithm.
 """
 
 # TODO Hogyan kéne még fejleszteni a tranininget:
-# - Ahelyett, hogy az összes feature-t aggregáljuk (és lesz belőle az activity), minden feature-t külön kéne kezelni. Ezt egy paramétre döntse el.
 # - A training / testing files paraméter hiányát lekezelni.
-
 # - A country code segítségével csinálni egy új feature-t.
 # - Az eredményt lehesen fájlba / adatbázisba írni. Ezt egy paraméter döntse el.
 # - (PCA-t használni.)
@@ -23,14 +21,14 @@ import preprocess
 if __name__ == '__main__':
     print('Initialize the algorithm...')
     start_time = time()
-    training_files, testing_files, squares = initialise.initialise()
+    training_files, testing_files, squares, features = initialise.initialise()
     print('Done to initialze the algorithm. Time: ', round(time() - start_time, 3), ' sec')
 
     print('Preprocess the datasets...')
     start_time = time()
-    # preprocess the training and tsting datasets
-    training_data = preprocess.preprocess_dataset(training_files, squares, is_training=True)
-    testing_data = preprocess.preprocess_dataset(testing_files, squares)
+    # preprocess the training and testing datasets
+    training_data = preprocess.preprocess_dataset(training_files, squares, features, is_training=True)
+    testing_data = preprocess.preprocess_dataset(testing_files, squares, features)
 
     # sorted and unique timestamps for a day, in minutes
     unique_timestamps = np.unique(training_data[constant.WEEKDAYS][constant.TIMESTAMPS])
