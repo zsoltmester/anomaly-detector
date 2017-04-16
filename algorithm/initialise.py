@@ -38,7 +38,7 @@ def initialise():
     testing_files = common_function.collect_files_in_dir(testing_files_root)
 
     number_of_squares = args['squares']
-    squares = list(range(1, number_of_squares + 1)) # FIXME this is here just for optimization purpose
+    squares = list(range(1, number_of_squares + 1))  # FIXME this is here just for optimization purpose
 
     features = args['features']
 

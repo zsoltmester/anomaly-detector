@@ -184,7 +184,7 @@ def translate_matrix_to_mean_vector(matrix):
         features: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature.
 
     Returns:
-        - 1.: The vector of the mean values.
+        The vector of the mean values.
     """
     mean_vector = np.array([])
     for row in matrix:
@@ -223,7 +223,8 @@ def preprocess_dataset(dataset_files, squares, features, is_training=False):
     timestamps, features = split_data_for_timestamps_and_features(data)
     weekdays, weekends = split_data_for_weekdays_and_weekends(timestamps, features)
     categories = {constant.WEEKDAYS: weekdays, constant.WEEKENDS: weekends}
-    for _, category in categories.items():
+    for category_id in [constant.WEEKDAYS, constant.WEEKENDS]:
+        category = categories[category_id]
         category[constant.FEATURES] = scale_features(category[constant.FEATURES])
         category[constant.FEATURES] = translate_matrix_to_mean_vector(category[constant.FEATURES])
         if is_training:
@@ -263,7 +264,7 @@ def features_mean_for_each_timestamps(data):
     features_mean = np.array([])
     current_timestamp = data[constant.TIMESTAMPS][0]
     current_values = np.array([])
-    for index, _ in enumerate(data[constant.TIMESTAMPS]):
+    for index in range(0, len(data[constant.TIMESTAMPS])):
         current_values = np.append(current_values, data[constant.FEATURES][index])
         if index == len(data[constant.TIMESTAMPS]) - 1 or current_timestamp < data[constant.TIMESTAMPS][index + 1]:
             # add the mean value
