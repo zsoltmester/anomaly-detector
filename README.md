@@ -1,3 +1,20 @@
+# TODO
+
+**Május 15** a határidő. Addig el kell készítenem a programot és a dokumentációt.
+
+## Program
+
+### algorithm
+
+- A training / testing files paraméter hiányát lekezelni.
+- A country code segítségével csinálni egy új feature-t.
+- Az eredményt lehesen fájlba / adatbázisba írni. Ezt egy paraméter döntse el.
+- (PCA-t használni.)
+
+### webapp
+
+## Dokumentáció
+
 # Anomaly Detector
 
 This is an anomaly detector for call detail records ([CDR](https://en.wikipedia.org/wiki/Call_detail_record)). It's my BSc thesis, which you can check at `docs/thesis.pdf`.

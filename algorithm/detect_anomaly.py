@@ -2,12 +2,6 @@
 The main script for the algorithm.
 """
 
-# TODO Hogyan kéne még fejleszteni a tranininget:
-# - A training / testing files paraméter hiányát lekezelni.
-# - A country code segítségével csinálni egy új feature-t.
-# - Az eredményt lehesen fájlba / adatbázisba írni. Ezt egy paraméter döntse el.
-# - (PCA-t használni.)
-
 from time import time
 
 import numpy as np

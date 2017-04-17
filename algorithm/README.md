@@ -2,7 +2,7 @@
 
 ## Code style
 
-Code styled according to [PEP 8](https://www.python.org/dev/peps/pep-0008/). Format validated by [this](https://github.com/PyCQA/pycodestyle) tool. The **setup.cfg** is the configuration file of the *pycodestyle*.
+Code styled according to [PEP 8](https://www.python.org/dev/peps/pep-0008/). Format validated by the [pycodestyle](https://github.com/PyCQA/pycodestyle) tool. The **setup.cfg** is the configuration file of the *pycodestyle*.
 
 ## Docs
 
