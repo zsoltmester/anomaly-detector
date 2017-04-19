@@ -1,6 +1,6 @@
 # The main algorithm for the anomaly detector
 
-## Code style
+## Code Style
 
 Code styled according to [PEP 8](https://www.python.org/dev/peps/pep-0008/). Format validated by the [pycodestyle](https://github.com/PyCQA/pycodestyle) tool. The **setup.cfg** is the configuration file of the *pycodestyle*.
 
