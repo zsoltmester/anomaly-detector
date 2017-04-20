@@ -13,7 +13,6 @@
 
 ### webapp
 
-- A chart POC-t elkészíteni.
 - Kipróbálni a line chartot beégetett adattal.
 - Kipróbálni a line chartot CSV-ből vett adattal.
 - Kipróbálni a line chartot adatbázisból vett adattal.
