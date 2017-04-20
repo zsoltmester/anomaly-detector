@@ -6,14 +6,18 @@
 
 ### algorithm
 
+- Az eredményt lehesen adatbázisba írni. Ezt egy paraméter döntse el.
 - A training / testing files paraméter hiányát lekezelni.
 - A country code segítségével csinálni egy új feature-t.
-- Az eredményt lehesen fájlba / adatbázisba írni. Ezt egy paraméter döntse el.
+- Anomáliát deketálni.
+- Ez utóbbit az adatbázisba beírni.
 - (PCA-t használni.)
 
 ### webapp
 
+- Adatbázis.
 - Kipróbálni a line chartot adatbázisból vett adattal.
+- Térkép.
 
 ## Dokumentáció
 
