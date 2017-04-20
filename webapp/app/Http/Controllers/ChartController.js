@@ -1,7 +1,7 @@
 'use strict'
 
 class ChartController {
-  * showcase (request, response) {
+  * index (request, response) {
     yield response.sendView('chart-showcase')
   }
 }
