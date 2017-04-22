@@ -32,24 +32,30 @@
 - A térkép egy google maps.
 - A cellák poligonjai el lesznek tárolva egy sqlite adatbázisban a backenden, amiket a kliens 1 kéréssel meg tud kapni a backendtől.
 - A cellák értékeit a kliens a backendtől kéri le, mégpedig 1 hívással mind a 10000 celláét. A kliens a konfigurációt elküldi a requestben.
+- A színskála statikusan van benne a kliens kódjában.
 
 **A webapp további funkciói**:
-TODO: ha lesz rá időm
+Ha lesz rá időm.
 
 ### algorithm
 
-- Az eredményt lehesen adatbázisba írni. Ezt egy paraméter döntse el.
-- A training / testing files paraméter hiányát lekezelni.
 - A country code segítségével csinálni egy új feature-t.
-- Anomáliát deketálni.
-- Ez utóbbit az adatbázisba beírni.
-- (PCA-t használni.)
+- Ponthalmaz feldolgozó program lefejlesztése.
+- Ponthalmaz gyártó program lefejlesztése és lefuttatása.
+- Az anomália detektáló program lefejlesztése.
+- Unit tesztek írása.
 
 ### webapp
 
-- Megírni egy sample csv-t. A fájl neve a dátum lesz. A tartalma pedig
-- Kipróbálni a line chartot adatbázisból vett adattal.
-- Térkép.
+- A kliens jelenítse meg a térképet.
+- A backenden legyenek eltárolva a cellák polinomjai, amik lekérdezhetőek.
+- A kliens jelenítse meg a cellákat a térképen.
+- A kliens jelenítse meg az időszakasz választó komponenst.
+- A kliens jelenítse meg az aktív featureöket váalsztó komponenst.
+- A kliens jelenítse meg a színskálát.
+- A backend ki tudja számolni a python script segítségével a cellák értékét és azt vissza tudja küldeni a kliensnek, aki azt megjeleníti.
+- Dokumentációs írása és generáló tool keresése.
+- Unit tesztek írása.
 
 ## Dokumentáció
 
