@@ -30,7 +30,7 @@
 
 **A webapp minimális funkcióinak megvalósítása**:
 - A térkép egy google maps.
-- A cellák poligonjai el lesznek tárolva egy sqlite adatbázisban a backenden, amiket a kliens 1 kéréssel meg tud kapni a backendtől.
+- A cellák poligonjai assetként mindig elérhető a kliensnek egy geojson-ként.
 - A cellák értékeit a kliens a backendtől kéri le, mégpedig 1 hívással mind a 10000 celláét. A kliens a konfigurációt elküldi a requestben.
 - A színskála statikusan van benne a kliens kódjában.
 
@@ -47,10 +47,8 @@ Ha lesz rá időm.
 
 ### webapp
 
-- A backenden legyenek eltárolva a cellák polinomjai, amik lekérdezhetőek.
-- A kliens jelenítse meg a cellákat a térképen.
 - A kliens jelenítse meg az időszakasz választó komponenst.
-- A kliens jelenítse meg az aktív featureöket váalsztó komponenst.
+- A kliens jelenítse meg az aktív featureöket választó komponenst.
 - A kliens jelenítse meg a színskálát.
 - A backend ki tudja számolni a python script segítségével a cellák értékét és azt vissza tudja küldeni a kliensnek, aki azt megjeleníti.
 - Dokumentációs írása és generáló tool keresése.
