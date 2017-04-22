@@ -1,0 +1,14 @@
+{% extends 'base' %}
+
+{% block title %}
+	Anomaly Detector
+{% endblock %}
+
+{% block content %}
+	<div id="map"></div>
+{% endblock %}
+
+{% block scripts %}
+	<script src="/scripts/main.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDoyJJuwFRdwtqcS4c7hSW7_Qijoz7SoLw&callback=initMap" async defer></script>
+{% endblock %}

@@ -47,7 +47,6 @@ Ha lesz rá időm.
 
 ### webapp
 
-- A kliens jelenítse meg a térképet.
 - A backenden legyenek eltárolva a cellák polinomjai, amik lekérdezhetőek.
 - A kliens jelenítse meg a cellákat a térképen.
 - A kliens jelenítse meg az időszakasz választó komponenst.

@@ -17,6 +17,4 @@
 
 const Route = use('Route')
 
-Route.on('/').render('welcome')
-
-Route.resource('chart', 'ChartController')
+Route.on('/').render('main')
