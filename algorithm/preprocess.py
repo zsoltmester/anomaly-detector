@@ -88,8 +88,7 @@ def get_value_from_row(row, value_id):
 def group_data_by_time_interval(data):
     """Group the given data by the timestamps.
 
-    It summarises the values for each property for the same timestamp, except the country code. Instead of the country
-    code, it calculates the activities for the foreign countries.
+    It summarises the values for each property for the same timestamp, except the country code.
 
     Args:
         data: The data as a list of dictionaries, where the keys are the constant.FEATURE_*  global constants.

@@ -43,11 +43,6 @@ ID for the internet traffic feature.
 FEATURE_INTERNET = 'internet'
 
 """
-ID for the foreign activity feature.
-"""
-FEATURE_FOREIGN = 'foreign'
-
-"""
 ID for weekdays.
 """
 WEEKDAYS = 'weekdays'

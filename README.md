@@ -12,11 +12,11 @@
 		- training esetén: *év-hónap,év-hónap,...*, például *2013-11,2013-12,2014-01*
 		- testing esetén: *év-hónap-nap*, például *2013-12-09*
 	- **square**: egy szám 0 és 9999 közt. Training esetén lehet *all* is.
-	- **feature**: *call-in*, *call-out*, *sms-in*, *sms-out*, *internet* vagy *foreign*
+	- **feature**: *call-in*, *call-out*, *sms-in*, *sms-out* vagy *internet*
 - A ponthalmazgyártó egy python program, ami a ponthalmazfeldolgozó segítségével legyártja a lent definiált ponthalmazokat és elmenti azokat egy SQLite adatbázisba. A következő ponthalmazokat kell létrehoznia:
-  	- *training 2013-11 {all, 0, 1, ..., 9999} {call-in, call-out, sms-in, sms-out, internet, foreign}*: ez `10001 * 6 = 60006` db ponthalmaz
-	- *testing {2013-12-01, ..., 2013-12-31, 2014-01-01} {0, 1, ..., 9999} {call-in, call-out, sms-in, sms-out, internet, foreign}*: ez `32 * 10000 * 6 = 1920000` db ponthalmaz
-	- Ez összesen 1980006 db ponthalmaz.
+	- *training 2013-11 {all, 0, 1, ..., 9999} {call-in, call-out, sms-in, sms-out, internet}*: ez `10001 * 5 = 50005` db ponthalmaz
+	- *testing {2013-12-01, ..., 2013-12-31, 2014-01-01} {0, 1, ..., 9999} {call-in, call-out, sms-in, sms-out, internet}*: ez `32 * 10000 * 5 = 160000` db ponthalmaz
+	- Ez összesen 1650005 db ponthalmaz.
 
 **Anomália detektálás**:
 - Egy python program fogja végezni, ami megkapja paraméterként az időszakasz kezdetét és a végét, illetve az aktív featureök számát. Kiszámolja minden cellához, hogy mennyire tér el a megszokottól (0-nál >= pozitív lebegőpontos szám). Visszaküldi ezeket a cella-érték párokat.
@@ -39,7 +39,6 @@ Ha lesz rá időm.
 
 ### algorithm
 
-- A country code segítségével csinálni egy új feature-t.
 - Ponthalmaz feldolgozó program lefejlesztése.
 - Ponthalmaz gyártó program lefejlesztése és lefuttatása.
 - Az anomália detektáló program lefejlesztése.

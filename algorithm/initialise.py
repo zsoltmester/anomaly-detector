@@ -26,7 +26,7 @@ def initialise():
     parser.add_argument('--training', help='Path to the root directory of the training dataset.', required=True)
     parser.add_argument('--testing', help='Path to the root directory of the testing dataset.', required=True)
     parser.add_argument('-s', '--squares', type=int, help='The number of squares to analyze, from 1 to the given value.', required=True)
-    feature_choices = ['sms-in', 'sms-out', 'call-in', 'call-out', 'internet', 'foreign']
+    feature_choices = ['sms-in', 'sms-out', 'call-in', 'call-out', 'internet']
     parser.add_argument('-f', '--features', help='Which features to use to generate the polinomials. Also, comma separated values are valid, which means it will combine the given features. By default, it combines all the features.', choices=feature_choices, nargs='+', required=False, default=feature_choices)
 
     args = vars(parser.parse_args())
