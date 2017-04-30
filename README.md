@@ -2,6 +2,8 @@
 
 **Május 15** a határidő. Addig el kell készítenem a programot és a dokumentációt.
 
+python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --square all --action save
+
 ## Program
 
 **Az adatok feldolgozása**:

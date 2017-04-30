@@ -14,7 +14,7 @@ import constant
 """
 In memory cache for the data files.
 """
-_RAW_DATA = []
+_RAW_DATA = None
 
 """
 The scaler for the feature scaling.
@@ -37,12 +37,16 @@ def read_files(files, square):
     Returns:
         The list of the read rows, where each item is a dictinary, where the keys are the constant.FEATURE_* global constants.
     """
-    if len(_RAW_DATA) == 0:
+    global _RAW_DATA
+    if _RAW_DATA is None:
+        _RAW_DATA = []
         for file in files:
             with open(file) as tsv_file:
                 print('Reading', file, '...')
                 for line in tsv_file:
                     values = line.split('\t')
+                    if int(values[0]) > 2000:
+                        continue
                     _RAW_DATA.append({
                         constant.FEATURE_SQUARE_ID: values[0],
                         constant.FEATURE_TIME_INTERVAL: values[1],
@@ -76,7 +80,7 @@ def get_value_from_row(row, value_id):
     try:
         return float(row[value_id])
     except ValueError:
-        return 0
+        return 0.
 
 
 def group_data_by_time_interval(data, features):
@@ -222,6 +226,8 @@ def preprocess_dataset(dataset_files, square, features, is_training=False):
         if is_training:
             category[constant.TIMESTAMPS] = common_function.get_minutes(category[constant.TIMESTAMPS])
         category[constant.TIMESTAMPS], category[constant.FEATURES] = common_function.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
+    global _SCALER
+    _SCALER = None
     return categories
 
 

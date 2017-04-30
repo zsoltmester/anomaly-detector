@@ -22,8 +22,9 @@ if __name__ == '__main__':
     print('Done to initialze the algorithm. Time: ', round(time() - start_time, 3), ' sec')
 
     for square in squares:
+        if int(square) > 2000:
+            continue
         print('*** SQUARE ' + str(square) + ' ***')
-
         print('Preprocess the datasets...')
         start_time = time()
         # preprocess the training and testing datasets
