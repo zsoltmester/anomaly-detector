@@ -18,14 +18,14 @@ if __name__ == '__main__':
 
     print('Initialize the algorithm...')
     start_time = time()
-    action, training_files, testing_files, squares, features = initialise.initialise()
+    action, training_files, testing_files, square, features = initialise.initialise()
     print('Done to initialze the algorithm. Time: ', round(time() - start_time, 3), ' sec')
 
     print('Preprocess the datasets...')
     start_time = time()
     # preprocess the training and testing datasets
-    training_data = preprocess.preprocess_dataset(training_files, squares, features, is_training=True)
-    testing_data = preprocess.preprocess_dataset(testing_files, squares, features)
+    training_data = preprocess.preprocess_dataset(training_files, square, features, is_training=True)
+    testing_data = preprocess.preprocess_dataset(testing_files, square, features)
 
     # sorted and unique timestamps for a day, in minutes
     unique_timestamps = np.unique(training_data[constant.WEEKDAYS][constant.TIMESTAMPS])
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
         print('Save the differences to the database...')
         start_time = time()
-        save.write_differences_to_sqlite(squares[0], differences);
+        save.write_differences_to_sqlite(square, differences);
         # save.read_differences_from_sqlite(); # for testing purpose
         print('Done to save the differences to the database. Time: ', round(time() - start_time, 3), ' sec')
 

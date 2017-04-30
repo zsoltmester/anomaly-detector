@@ -12,11 +12,6 @@ import common_function
 import constant
 
 """
-IDs of the columns of the data, ordered as the input data rows.
-"""
-_COLUMNS = (constant.FEATURE_SQUARE_ID, constant.FEATURE_TIME_INTERVAL, constant.FEATURE_COUNTRY_CODE, constant.FEATURE_SMS_IN, constant.FEATURE_SMS_OUT, constant.FEATURE_CALL_IN, constant.FEATURE_CALL_OUT, constant.FEATURE_INTERNET)
-
-"""
 The scaler for the feature scaling.
 """
 _SCALER = None
@@ -27,44 +22,36 @@ A constant that controls how many outliers we will drop.
 _OUTLIER_CONTROL = 1.75
 
 
-def read_files(files, squares, features):
-    """Reades the given files and collect the data for the specified squares.
+def read_files(files, square):
+    """Reades the given files and collect the data for the specified square.
 
     Args:
         files: Paths to the files. It must be an iterable on strings.
-        squares: The squares to read. It must be a collection of ints.
-        features: The ID of the features to read.
+        square: The square to read. It must be an int or string.
 
     Returns:
         The list of the read rows, where each item is a dictinary, where the keys are the constant.FEATURE_* global constants.
     """
-    features.extend([constant.FEATURE_SQUARE_ID, constant.FEATURE_TIME_INTERVAL, constant.FEATURE_COUNTRY_CODE])
     data = []
+    square = str(square) + '\t'
     for file in files:
-        # It can be useful for debugging:
-        # with open(file) as tsv_file:
-        #     tsv_reader = csv.DictReader(tsv_file, delimiter='\t', fieldnames=_COLUMNS)
-        #     last_read_square_id = -1
-        #     counter = -1
-        #     for row in tsv_reader:
-        #         if last_read_square_id != int(row[constant.FEATURE_SQUARE_ID]):  # assume that the values for a square are groupped together
-        #             counter += 1
-        #             if counter < len(squares):
-        #                 last_read_square_id = int(row[constant.FEATURE_SQUARE_ID])
-        #             else:
-        #                 break
-        #         new_row = {}
-        #         for key, value in row.items():
-        #             if key in features:
-        #                 new_row[key] = value
-        #         data.append(new_row)
         with open(file) as tsv_file:
-            print('Reading ', file, '...')
-            tsv_reader = csv.DictReader(tsv_file, delimiter='\t', fieldnames=_COLUMNS)
-            for row in tsv_reader:
-                for square in squares:
-                    if int(row[constant.FEATURE_SQUARE_ID]) == square:
-                        data.append(row)
+            print('Reading', file, '...')
+            found_square = False
+            for line in tsv_file:
+                if line.startswith(square):
+                    found_square = True
+                    values = line.split('\t')
+                    data.append({
+                        constant.FEATURE_TIME_INTERVAL: values[1],
+                        constant.FEATURE_SMS_IN: values[3],
+                        constant.FEATURE_SMS_OUT: values[4],
+                        constant.FEATURE_CALL_IN: values[5],
+                        constant.FEATURE_CALL_OUT: values[6],
+                        constant.FEATURE_INTERNET: values[7]
+                    })
+                elif found_square: # assume that the values for a square are groupped together
+                    break
     return data
 
 
@@ -80,20 +67,23 @@ def get_value_from_row(row, value_id):
     Returns:
         The value for the given ID as a float.
     """
-    value = float(row[value_id]) if row[value_id] else 0.
-    return value
+    try:
+        return float(row[value_id])
+    except ValueError:
+        return 0
 
 
-def group_data_by_time_interval(data):
-    """Group the given data by the timestamps.
+def group_data_by_time_interval(data, features):
+    """Group the given data by the timestamps with the given features.
 
-    It summarises the values for each property for the same timestamp, except the country code.
+    It summarises the values for each feature for the same timestamp.
 
     Args:
-        data: The data as a list of dictionaries, where the keys are the constant.FEATURE_*  global constants.
+        data: The data as a list of dictionaries, where the keys are the constant.FEATURE_* global constants.
+        features: The ID of the features to keep.
 
     Returns:
-        The grouped data as a dictinary, where the keys are the timestamps and the values are the properties for a timestamp as a dictinary. The latter's keys are the constant.FEATURE_* global constants.
+        The grouped data as a dictinary, where the keys are the timestamps and the values are the properties for a timestamp as a dictinary. The latter's keys are the given features.
     """
     grouped_data = {}
     for row in data:
@@ -102,12 +92,10 @@ def group_data_by_time_interval(data):
             for prop in grouped_data[time_interval]:
                 grouped_data[time_interval][prop] += get_value_from_row(row, prop)
         else:
-            del row[constant.FEATURE_SQUARE_ID]
-            del row[constant.FEATURE_TIME_INTERVAL]
-            del row[constant.FEATURE_COUNTRY_CODE]
             grouped_data[time_interval] = {}
             for prop in row:
-                grouped_data[time_interval][prop] = get_value_from_row(row, prop)
+                if prop in features:
+                    grouped_data[time_interval][prop] = get_value_from_row(row, prop)
     return grouped_data
 
 
@@ -205,7 +193,7 @@ def preprocess_dataset(dataset_files, squares, features, is_training=False):
 
     Args:
         dataset_files: List of the paths of the dataset files.
-        squares: The squares to read.
+        squares: The square to read.
         features: Which features to keep. The valid values are the constant.FEATURE_* global constants.
         is_training: Indicates if it's a training dataset or not. False by default.
 
@@ -216,8 +204,8 @@ def preprocess_dataset(dataset_files, squares, features, is_training=False):
             constant.WEEKENDS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }
         }
     """
-    data = read_files(dataset_files, squares, features)
-    data = group_data_by_time_interval(data)
+    data = read_files(dataset_files, squares)
+    data = group_data_by_time_interval(data, features)
     timestamps, features = split_data_for_timestamps_and_features(data)
     weekdays, weekends = split_data_for_weekdays_and_weekends(timestamps, features)
     categories = {constant.WEEKDAYS: weekdays, constant.WEEKENDS: weekends}
