@@ -29,7 +29,7 @@ def initialise():
     parser.add_argument('-a', '--action', help='Which action to perform. The vizualization will display the polinoms. The save will insert the results to a database.', choices=action_choices, required=True)
     parser.add_argument('--training', help='Path to the root directory of the training dataset.', required=True)
     parser.add_argument('--testing', help='Path to the root directory of the testing dataset.', required=True)
-    parser.add_argument('-s', '--square', help='The square to analyze. It can be a value from 0 to 9999, or "all".', required=True)
+    parser.add_argument('-s', '--square', help='The square to analyze. It can be a value from 1 to 10000, or "all".', required=True)
     feature_choices = [constant.FEATURE_SMS_IN, constant.FEATURE_SMS_OUT, constant.FEATURE_CALL_IN, constant.FEATURE_CALL_OUT, constant.FEATURE_INTERNET]
     parser.add_argument('-f', '--features', help='Which features to use to generate the polinomials. Also, comma separated values are valid, which means it will combine the given features. By default, it combines all the features.', choices=feature_choices, nargs='+', required=False, default=feature_choices)
 
@@ -41,14 +41,14 @@ def initialise():
     square = args['square']
     if square.isdigit():
         square = int(square)
-        if not (0 <= square < 10000):
-            print('Invalid arguments! The square must be a number between 0 and 9999 or a string "all".')
+        if not (1 <= square <= 10000):
+            print('Invalid arguments! The square must be a number between 1 to 10000 or a string "all".')
             exit(1)
         squares = [square]
     elif square == 'all':
-        squares = list(range(0, 10000))
+        squares = list(range(0, 10001))
     else:
-        print('Invalid arguments! The square must be a number between 0 and 9999 or a string "all".')
+        print('Invalid arguments! The square must be a number between 1 to 10000 or a string "all".')
         exit(1)
 
     training_files_root = args['training']
