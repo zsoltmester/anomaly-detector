@@ -41,31 +41,30 @@ def read_files(files, squares, features):
     features.extend([constant.FEATURE_SQUARE_ID, constant.FEATURE_TIME_INTERVAL, constant.FEATURE_COUNTRY_CODE])
     data = []
     for file in files:
-        # FIXME a hack to fasten the file reader
-        with open(file) as tsv_file:
-            tsv_reader = csv.DictReader(tsv_file, delimiter='\t', fieldnames=_COLUMNS)
-            last_read_square_id = -1
-            counter = -1
-            for row in tsv_reader:
-                if last_read_square_id != int(row[constant.FEATURE_SQUARE_ID]):  # assume that the values for a square are groupped together
-                    counter += 1
-                    if counter < len(squares):
-                        last_read_square_id = int(row[constant.FEATURE_SQUARE_ID])
-                    else:
-                        break
-                new_row = {}
-                for key, value in row.items():
-                    if key in features:
-                        new_row[key] = value
-                data.append(new_row)
-        # this should be the implementation, but it requires much more time to run. I can optimize this a little
+        # It can be useful for debugging:
         # with open(file) as tsv_file:
-        #     print('Reading ' + file)
-        #     tsv_reader = csv.DictReader(tsvFile, delimiter='\t', fieldnames=_COLUMNS)
+        #     tsv_reader = csv.DictReader(tsv_file, delimiter='\t', fieldnames=_COLUMNS)
+        #     last_read_square_id = -1
+        #     counter = -1
         #     for row in tsv_reader:
-        #         for square in squares:
-        #             if int(row[constant.FEATURE_SQUARE_ID]) == square:
-        #                 data.append(row)
+        #         if last_read_square_id != int(row[constant.FEATURE_SQUARE_ID]):  # assume that the values for a square are groupped together
+        #             counter += 1
+        #             if counter < len(squares):
+        #                 last_read_square_id = int(row[constant.FEATURE_SQUARE_ID])
+        #             else:
+        #                 break
+        #         new_row = {}
+        #         for key, value in row.items():
+        #             if key in features:
+        #                 new_row[key] = value
+        #         data.append(new_row)
+        with open(file) as tsv_file:
+            print('Reading ', file, '...')
+            tsv_reader = csv.DictReader(tsv_file, delimiter='\t', fieldnames=_COLUMNS)
+            for row in tsv_reader:
+                for square in squares:
+                    if int(row[constant.FEATURE_SQUARE_ID]) == square:
+                        data.append(row)
     return data
 
 

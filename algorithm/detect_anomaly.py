@@ -11,11 +11,14 @@ import display
 import initialise
 import interpolate
 import preprocess
+import save
 
 if __name__ == '__main__':
+    algorithm_start_time = time()
+
     print('Initialize the algorithm...')
     start_time = time()
-    training_files, testing_files, squares, features = initialise.initialise()
+    action, training_files, testing_files, squares, features = initialise.initialise()
     print('Done to initialze the algorithm. Time: ', round(time() - start_time, 3), ' sec')
 
     print('Preprocess the datasets...')
@@ -35,18 +38,38 @@ if __name__ == '__main__':
         testing_data_grouped_by_day[category] = preprocess.group_data_by_day(testing_data[category])
     print('Done to preprocess the datasets. Time: ', round(time() - start_time, 3), ' sec')
 
-    print('Generate the polinomials...')
-    start_time = time()
-    training_interpolation_polynomial = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
-    testing_interpolation_polynomials = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
-    for category in [constant.WEEKDAYS, constant.WEEKENDS]:
-        # create training interpolation polinomials
-        training_interpolation_polynomial[category] = interpolate.create_interpolation_polynomial(unique_timestamps, training_features_mean[category])
-        # create testing interpolation polinomials
-        testing_interpolation_polynomials[category] = interpolate.create_interpolation_polinomials(testing_data_grouped_by_day[category])
-    print('Done to generate the polinomials. Time: ', round(time() - start_time, 3), ' sec')
+    if action == constant.ACTION_VISUALIZE:
+        print('Generate the polinomials...')
+        start_time = time()
+        training_interpolation_polynomial = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
+        testing_interpolation_polynomials = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
+        for category in [constant.WEEKDAYS, constant.WEEKENDS]:
+            # create training interpolation polinomials
+            training_interpolation_polynomial[category] = interpolate.create_interpolation_polynomial(unique_timestamps, training_features_mean[category])
+            # create testing interpolation polinomials
+            testing_interpolation_polynomials[category] = interpolate.create_interpolation_polinomials(testing_data_grouped_by_day[category])
+        print('Done to generate the polinomials. Time: ', round(time() - start_time, 3), ' sec')
 
-    print('Displaying the polinomials...')
-    for category in [constant.WEEKDAYS, constant.WEEKENDS]:
-        for index, interpolation_polynomial in enumerate(testing_interpolation_polynomials[category]):
-            display.display_polinomials(training_data[category], unique_timestamps, training_features_mean[category], training_interpolation_polynomial[category], testing_data_grouped_by_day[category][index], interpolation_polynomial)
+        print('Display the polinomials...')
+        for category in [constant.WEEKDAYS, constant.WEEKENDS]:
+            for index, interpolation_polynomial in enumerate(testing_interpolation_polynomials[category]):
+                display.display_polinomials(training_data[category], unique_timestamps, training_features_mean[category], training_interpolation_polynomial[category], testing_data_grouped_by_day[category][index], interpolation_polynomial)
+    else:
+        print('Calulate the difference for each timestamp in each testing day...')
+        start_time = time()
+        differences = {}
+        for category in [constant.WEEKDAYS, constant.WEEKENDS]:
+            for testing_day_data in testing_data_grouped_by_day[category]:
+                differences[testing_day_data[constant.DAY]] = {}
+                for timestamp_index, timestamp in enumerate(unique_timestamps):
+                    difference = testing_day_data[constant.FEATURES][timestamp_index] - training_features_mean[category][timestamp_index]
+                    differences[testing_day_data[constant.DAY]][int(timestamp)] = difference
+        print('Done to calculate the differences. Time: ', round(time() - start_time, 3), ' sec')
+
+        print('Save the differences to the database...')
+        start_time = time()
+        save.write_differences_to_sqlite(squares[0], differences);
+        # save.read_differences_from_sqlite(); # for testing purpose
+        print('Done to save the differences to the database. Time: ', round(time() - start_time, 3), ' sec')
+
+    print('The algorithm finished. Time: ', round(time() - algorithm_start_time, 3), ' sec')

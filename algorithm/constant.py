@@ -3,6 +3,16 @@ Common constants.
 """
 
 """
+ID for the visualize action.
+"""
+ACTION_VISUALIZE = 'visualize'
+
+"""
+ID for the save action.
+"""
+ACTION_SAVE = 'save'
+
+"""
 ID for the square ID feature.
 """
 FEATURE_SQUARE_ID = 'square-id'
@@ -86,3 +96,8 @@ MINUTES_PER_HOUR = 60
 Constant for how many minutes is a day.
 """
 MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
+
+"""
+Database name for the save action.
+"""
+DIFFERENCES_DB = 'differences.db'
