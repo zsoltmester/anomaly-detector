@@ -12,6 +12,11 @@ import common_function
 import constant
 
 """
+In memory cache for the data files.
+"""
+_RAW_DATA = []
+
+"""
 The scaler for the feature scaling.
 """
 _SCALER = None
@@ -32,17 +37,14 @@ def read_files(files, square):
     Returns:
         The list of the read rows, where each item is a dictinary, where the keys are the constant.FEATURE_* global constants.
     """
-    data = []
-    square = str(square) + '\t'
-    for file in files:
-        with open(file) as tsv_file:
-            print('Reading', file, '...')
-            found_square = False
-            for line in tsv_file:
-                if line.startswith(square):
-                    found_square = True
+    if len(_RAW_DATA) == 0:
+        for file in files:
+            with open(file) as tsv_file:
+                print('Reading', file, '...')
+                for line in tsv_file:
                     values = line.split('\t')
-                    data.append({
+                    _RAW_DATA.append({
+                        constant.FEATURE_SQUARE_ID: values[0],
                         constant.FEATURE_TIME_INTERVAL: values[1],
                         constant.FEATURE_SMS_IN: values[3],
                         constant.FEATURE_SMS_OUT: values[4],
@@ -50,10 +52,14 @@ def read_files(files, square):
                         constant.FEATURE_CALL_OUT: values[6],
                         constant.FEATURE_INTERNET: values[7]
                     })
-                elif found_square: # assume that the values for a square are groupped together
-                    break
-    return data
-
+        return read_files(files, square)
+    else:
+        data = []
+        square = str(square) + '\t'
+        for data_point in _RAW_DATA:
+            if data_point[constant.FEATURE_SQUARE_ID] == square:
+                data.append(data_point)
+        return data
 
 def get_value_from_row(row, value_id):
     """Returns the values for the given ID from the given row.
@@ -178,7 +184,7 @@ def translate_matrix_to_mean_vector(matrix):
     return mean_vector
 
 
-def preprocess_dataset(dataset_files, squares, features, is_training=False):
+def preprocess_dataset(dataset_files, square, features, is_training=False):
     """Preprocess the given dataset.
 
     1. Reads the files.
@@ -193,7 +199,7 @@ def preprocess_dataset(dataset_files, squares, features, is_training=False):
 
     Args:
         dataset_files: List of the paths of the dataset files.
-        squares: The square to read.
+        square: The square to read.
         features: Which features to keep. The valid values are the constant.FEATURE_* global constants.
         is_training: Indicates if it's a training dataset or not. False by default.
 
@@ -204,7 +210,7 @@ def preprocess_dataset(dataset_files, squares, features, is_training=False):
             constant.WEEKENDS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }
         }
     """
-    data = read_files(dataset_files, squares)
+    data = read_files(dataset_files, square)
     data = group_data_by_time_interval(data, features)
     timestamps, features = split_data_for_timestamps_and_features(data)
     weekdays, weekends = split_data_for_weekdays_and_weekends(timestamps, features)
