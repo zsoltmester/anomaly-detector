@@ -78,7 +78,10 @@ def get_value_from_row(row, value_id):
         The value for the given ID as a float.
     """
     try:
-        return float(row[value_id])
+        value = float(row[value_id])
+        if np.isnan(value) or np.isinf(value):
+            print("WTF")
+            return 0.
     except ValueError:
         return 0.
 
