@@ -4,6 +4,7 @@ Utility functions for the anomaly detector to preprocess the dataset.
 
 import csv
 from datetime import datetime
+from time import time
 
 import numpy as np
 from sklearn import preprocessing
@@ -12,9 +13,14 @@ import common_function
 import constant
 
 """
-In memory cache for the data files.
+In memory cache for the training files. The keys are the squares (as ints) and the values are the features with values, as dictionaries.
 """
-_RAW_DATA = None
+_TRAINING_DATA_CACHE = {}
+
+"""
+In memory cache for the testing files. The keys are the squares (as ints) and the values are the features with values, as dictionaries.
+"""
+_TESTING_DATA_CACHE = {}
 
 """
 The scaler for the feature scaling.
@@ -27,43 +33,77 @@ A constant that controls how many outliers we will drop.
 _OUTLIER_CONTROL = 1.75
 
 
-def read_files(files, square):
-    """Reades the given files and collect the data for the specified square.
+def cache_data(files, square, is_training):
+    """Reades the given files and cache them into memory. If a square is not None, it will cache only that square.
+
+    It caches them into the _TRAINING_DATA_CACHE or the _TESTING_DATA_CACHE, based on the second parameter.
 
     Args:
         files: Paths to the files. It must be an iterable on strings.
+        square: Optional. The square to read. It must be an int or string. If this is not None, it will cache only this square.
+        is_training: Indicates if it's a training dataset or not.
+    """
+    print('Caching the files...')
+    start_time = time()
+    if is_training:
+        global _TRAINING_DATA_CACHE
+        data_cache = _TRAINING_DATA_CACHE
+    else:
+        global _TESTING_DATA_CACHE
+        data_cache = _TESTING_DATA_CACHE
+
+    for file in files:
+        if file == '/mnt/disk2/tim-bd-challenge/milano-december/sms-call-internet-mi-2014-01-01.txt': # if this inconsitency exists on the dataset, skip this file
+            continue
+        with open(file) as tsv_file:
+            print('Reading', file, '...')
+            square_found = False
+            for line in tsv_file:
+                values = line.split('\t')
+
+                current_square = int(values[0])
+                if (not square is None) and (int(square) == current_square):
+                    square_found = True
+                elif (not square is None) and square_found: # assume that that squares are grouped in a file
+                    break
+
+                if current_square > 3333: # FIXME for optimization purpose
+                    continue
+
+                data_point = {
+                    constant.FEATURE_TIME_INTERVAL: values[1],
+                    constant.FEATURE_SMS_IN: values[3],
+                    constant.FEATURE_SMS_OUT: values[4],
+                    constant.FEATURE_CALL_IN: values[5],
+                    constant.FEATURE_CALL_OUT: values[6],
+                    constant.FEATURE_INTERNET: values[7]
+                }
+
+                if not current_square in data_cache:
+                    data_cache[current_square] = []
+                data_cache[current_square].append(data_point)
+
+    print('Done to caching the files. Time: ', round(time() - start_time, 3), ' sec')
+
+def read_data_from_cache(square, is_training):
+    """Reades all the data from cache for the specified square.
+
+    Args:
         square: The square to read. It must be an int or string.
+        is_training: Indicates if it's a training dataset or not.
 
     Returns:
         The list of the read rows, where each item is a dictinary, where the keys are the constant.FEATURE_* global constants.
     """
-    global _RAW_DATA
-    if _RAW_DATA is None:
-        _RAW_DATA = []
-        for file in files:
-            with open(file) as tsv_file:
-                print('Reading', file, '...')
-                for line in tsv_file:
-                    values = line.split('\t')
-                    if int(values[0]) > 2000:
-                        continue
-                    _RAW_DATA.append({
-                        constant.FEATURE_SQUARE_ID: values[0],
-                        constant.FEATURE_TIME_INTERVAL: values[1],
-                        constant.FEATURE_SMS_IN: values[3],
-                        constant.FEATURE_SMS_OUT: values[4],
-                        constant.FEATURE_CALL_IN: values[5],
-                        constant.FEATURE_CALL_OUT: values[6],
-                        constant.FEATURE_INTERNET: values[7]
-                    })
-        return read_files(files, square)
+    if is_training:
+        global _TRAINING_DATA_CACHE
+        data_cache = _TRAINING_DATA_CACHE
     else:
-        data = []
-        square = str(square) + '\t'
-        for data_point in _RAW_DATA:
-            if data_point[constant.FEATURE_SQUARE_ID] == square:
-                data.append(data_point)
-        return data
+        global _TESTING_DATA_CACHE
+        data_cache = _TESTING_DATA_CACHE
+
+    return data_cache[int(square)]
+
 
 def get_value_from_row(row, value_id):
     """Returns the values for the given ID from the given row.
@@ -78,10 +118,7 @@ def get_value_from_row(row, value_id):
         The value for the given ID as a float.
     """
     try:
-        value = float(row[value_id])
-        if np.isnan(value) or np.isinf(value):
-            print("WTF")
-            return 0.
+        return float(row[value_id])
     except ValueError:
         return 0.
 
@@ -191,10 +228,10 @@ def translate_matrix_to_mean_vector(matrix):
     return mean_vector
 
 
-def preprocess_dataset(dataset_files, square, features, is_training=False):
+def preprocess_dataset(square, features, is_training):
     """Preprocess the given dataset.
 
-    1. Reads the files.
+    1. Reads the data from cache.
     2. Group by time interval.
     3. Split to timestamps and features.
     4. Split to weekdays and weekends.
@@ -205,10 +242,9 @@ def preprocess_dataset(dataset_files, square, features, is_training=False):
     If the dataset is large, it will run for a while.
 
     Args:
-        dataset_files: List of the paths of the dataset files.
         square: The square to read.
         features: Which features to keep. The valid values are the constant.FEATURE_* global constants.
-        is_training: Indicates if it's a training dataset or not. False by default.
+        is_training: Indicates if it's a training dataset or not.
 
     Returns:
         The processed dataset as a dictionary, with the following schema:
@@ -217,7 +253,7 @@ def preprocess_dataset(dataset_files, square, features, is_training=False):
             constant.WEEKENDS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }
         }
     """
-    data = read_files(dataset_files, square)
+    data = read_data_from_cache(square, is_training)
     data = group_data_by_time_interval(data, features)
     timestamps, features = split_data_for_timestamps_and_features(data)
     weekdays, weekends = split_data_for_weekdays_and_weekends(timestamps, features)
@@ -229,8 +265,6 @@ def preprocess_dataset(dataset_files, square, features, is_training=False):
         if is_training:
             category[constant.TIMESTAMPS] = common_function.get_minutes(category[constant.TIMESTAMPS])
         category[constant.TIMESTAMPS], category[constant.FEATURES] = common_function.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
-    global _SCALER
-    _SCALER = None
     return categories
 
 
@@ -308,3 +342,9 @@ def group_data_by_day(data):
                 current_timestamps = np.array([])
                 current_features = np.array([])
     return days
+
+def reset_scaler():
+    """ It resets the global _SCALER instance.
+    """
+    global _SCALER
+    _SCALER = None
