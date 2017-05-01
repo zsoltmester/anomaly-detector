@@ -2,48 +2,22 @@
 
 **Május 15** a határidő. Addig el kell készítenem a programot és a dokumentációt.
 
-python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --square all --action save
-
 ## Program
-
-**Az adatok feldolgozása**:
-- Mindig ugyanazt a skálázót kell használni. Annak paraméterei a forráskódba vannak mentve.
-- A ponthalmazfeldolgozó egy python program, ami a kapott paraméterek alapján legyárt egy ponthalmazt. A ponthalmaz tulajdonságai:
-	- **type**: *training* vagy *testing*
-	- **date**:
-		- training esetén: *év-hónap,év-hónap,...*, például *2013-11,2013-12,2014-01*
-		- testing esetén: *év-hónap-nap*, például *2013-12-09*
-	- **square**: egy szám 0 és 9999 közt. Training esetén lehet *all* is.
-	- **feature**: *call-in*, *call-out*, *sms-in*, *sms-out* vagy *internet*
-- A ponthalmazgyártó egy python program, ami a ponthalmazfeldolgozó segítségével legyártja a lent definiált ponthalmazokat és elmenti azokat egy SQLite adatbázisba. A következő ponthalmazokat kell létrehoznia:
-	- *training 2013-11 {all, 0, 1, ..., 9999} {call-in, call-out, sms-in, sms-out, internet}*: ez `10001 * 5 = 50005` db ponthalmaz
-	- *testing {2013-12-01, ..., 2013-12-31, 2014-01-01} {0, 1, ..., 9999} {call-in, call-out, sms-in, sms-out, internet}*: ez `32 * 10000 * 5 = 160000` db ponthalmaz
-	- Ez összesen 1650005 db ponthalmaz.
-
-**Anomália detektálás**:
-- Egy python program fogja végezni, ami megkapja paraméterként az időszakasz kezdetét és a végét, illetve az aktív featureök számát. Kiszámolja minden cellához, hogy mennyire tér el a megszokottól (0-nál >= pozitív lebegőpontos szám). Visszaküldi ezeket a cella-érték párokat.
 
 **A webapp minimális funkciói**:
 - A főoldal nagy részét egy térkép foglalja el. Ez a térkép 10000 cellára van felosztva. A cella színe jelzi, hogy mennyire volt kiugró az aktivitás.
 - Konfigurálható:
 	- *Időszakasz*: Az időszakaszt egy idővonalon a kezdő és a végpont megadásával lehet kiválasztani. A UI segít a szakasz léptetésében / változtatásában.
-	- *Az aktív featureök*.
 - Látható egy színskála, amivel eldönthető, hogy az adott érték mennyire kiugró.
 
 **A webapp minimális funkcióinak megvalósítása**:
 - A térkép egy google maps.
 - A cellák poligonjai assetként mindig elérhető a kliensnek egy geojson-ként.
-- A cellák értékeit a kliens a backendtől kéri le, mégpedig 1 hívással mind a 10000 celláét. A kliens a konfigurációt elküldi a requestben.
+- A cellák értékeit a kliens a backendtől kéri le, mégpedig 1 hívással mind a 10000 celláét. A kliens az időszakaszt elküldi a requestben.
 - A színskála statikusan van benne a kliens kódjában.
-
-**A webapp további funkciói**:
-Ha lesz rá időm.
 
 ### algorithm
 
-- Ponthalmaz feldolgozó program lefejlesztése.
-- Ponthalmaz gyártó program lefejlesztése és lefuttatása.
-- Az anomália detektáló program lefejlesztése.
 - Unit tesztek írása.
 
 ### webapp
@@ -51,7 +25,7 @@ Ha lesz rá időm.
 - A kliens jelenítse meg az időszakasz választó komponenst.
 - A kliens jelenítse meg az aktív featureöket választó komponenst.
 - A kliens jelenítse meg a színskálát.
-- A backend ki tudja számolni a python script segítségével a cellák értékét és azt vissza tudja küldeni a kliensnek, aki azt megjeleníti.
+- A backend ki tudja számolni a cellák értékét és azt vissza tudja küldeni a kliensnek, aki azt megjeleníti.
 - Dokumentációs írása és generáló tool keresése.
 - Unit tesztek írása.
 
