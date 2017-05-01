@@ -14,26 +14,41 @@ import preprocess
 import save
 
 
-def get_difference_for_day(testing_day_data, training_day_data, unique_timestamps):
+def get_difference_for_day(testing_day_data, training_day_data, timestamps):
     """Return the difference between the given testing and training day for each timestamp.
 
     Args:
         testing_day_data: The testing day's features, as a list of floats.
         training_day_data: The training day's features, as a list of floats.
-        unique_timestamps: The unique timestamps for a day.
+        timestamps: The timestamps for a day.
 
     Returns:
         A dictinary, where the keys are the timestamps (as ints) and the values are the differences (as floats).
     """
     differences = {}
-    for timestamp_index, timestamp in enumerate(unique_timestamps):
-        try:
-            difference = testing_day_data[timestamp_index] - training_day_data[timestamp_index]
-        except IndexError:
-            print('Index error when calaculate a difference. Nothing to do.')
+    for timestamp_index, timestamp in enumerate(timestamps):
+        difference = testing_day_data[timestamp_index] - training_day_data[timestamp_index]
         difference = math.fabs(difference)
         differences[int(timestamp)] = difference
     return differences
+
+
+def drop_unknown_values(testing_timestamps, training_timestamps, training_features):
+    """Drops the those training features, whose timestamps are not in the the testing timestamps.
+
+    Args:
+        testing_timestamps: The testing day's timestamps, as a list of ints.
+        training_timestamps: The training day's timestamps, as a list of ints.
+        training_features: The training day's features, as a list of floats.
+
+    Returns:
+        The filtered training features as a new array of floats.
+    """
+    filtered_training_features = []
+    for testing_timestamp in testing_timestamps:
+        testing_timestamp_index_in_training_timestamps = np.where(training_timestamps == testing_timestamp)[0]
+        filtered_training_features.append(training_features[testing_timestamp_index_in_training_timestamps][0])
+    return filtered_training_features
 
 
 if __name__ == '__main__':
@@ -63,8 +78,10 @@ if __name__ == '__main__':
         testing_data = preprocess.preprocess_dataset(square, features, is_training=False)
         preprocess.reset_scaler()
 
-        # sorted and unique timestamps for a day, in minutes
-        unique_timestamps = np.unique(training_data[constant.WEEKDAYS][constant.TIMESTAMPS])
+        # sorted and unique training timestamps for a day, in minutes
+        training_timestamps = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
+        for category in [constant.WEEKDAYS, constant.WEEKENDS]:
+            training_timestamps[category] = np.unique(training_data[category][constant.TIMESTAMPS])
 
         # create the training_features_mean for each timestamp and group the testing data by day
         training_features_mean = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
@@ -83,7 +100,7 @@ if __name__ == '__main__':
             testing_interpolation_polynomials = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
             for category in [constant.WEEKDAYS, constant.WEEKENDS]:
                 # create training interpolation polinomials
-                training_interpolation_polynomial[category] = interpolate.create_interpolation_polynomial(unique_timestamps, training_features_mean[category])
+                training_interpolation_polynomial[category] = interpolate.create_interpolation_polynomial(training_timestamps[category], training_features_mean[category])
                 # create testing interpolation polinomials
                 testing_interpolation_polynomials[category] = interpolate.create_interpolation_polinomials(testing_data_grouped_by_day[category])
             print('Done to generate the polinomials. Time: ', round(time() - start_time, 3), ' sec')
@@ -91,18 +108,20 @@ if __name__ == '__main__':
             print('Display the polinomials...')
             for category in [constant.WEEKDAYS, constant.WEEKENDS]:
                 for index, interpolation_polynomial in enumerate(testing_interpolation_polynomials[category]):
-                    differences = get_difference_for_day(testing_data_grouped_by_day[category][index][constant.FEATURES], training_features_mean[category], unique_timestamps)
-                    day = testing_data_grouped_by_day[category][index][constant.DAY]
-                    print('Differences for day ', day, ':', differences)
+                    filtered_training_features = drop_unknown_values(testing_data_grouped_by_day[category][index][constant.TIMESTAMPS], training_timestamps[category], training_features_mean[category])
 
-                    display.display_polinomials(training_data[category], unique_timestamps, training_features_mean[category], training_interpolation_polynomial[category], testing_data_grouped_by_day[category][index], interpolation_polynomial)
+                    differences = get_difference_for_day(testing_data_grouped_by_day[category][index][constant.FEATURES], filtered_training_features, testing_data_grouped_by_day[category][index][constant.TIMESTAMPS])
+                    print('Differences in day', testing_data_grouped_by_day[category][index], ':', differences)
+
+                    display.display_polinomials(training_data[category], filtered_training_features, training_interpolation_polynomial[category], testing_data_grouped_by_day[category][index], interpolation_polynomial)
         else:
             print('Calulate the difference for each timestamp in each testing day...')
             start_time = time()
             differences = {}
             for category in [constant.WEEKDAYS, constant.WEEKENDS]:
                 for testing_day_data in testing_data_grouped_by_day[category]:
-                    differences_for_current_day = get_difference_for_day(testing_day_data[constant.FEATURES], training_features_mean[category], unique_timestamps)
+                    filtered_training_features = drop_unknown_values(testing_day_data[constant.TIMESTAMPS], training_timestamps[category], training_features_mean[category])
+                    differences_for_current_day = get_difference_for_day(testing_day_data[constant.FEATURES], filtered_training_features, testing_day_data[constant.TIMESTAMPS])
                     differences[testing_day_data[constant.DAY]] = differences_for_current_day
             print('Done to calculate the differences. Time: ', round(time() - start_time, 3), ' sec')
 

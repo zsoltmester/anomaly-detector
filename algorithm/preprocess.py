@@ -225,8 +225,36 @@ def translate_matrix_to_mean_vector(matrix):
     """
     mean_vector = np.array([])
     for row in matrix:
-        mean_vector = np.append(mean_vector, np.mean(row))
+        valid_value = 0
+        sum_value = 0.
+        for value in row:
+            if value:
+                valid_value += 1
+                sum_value += value
+        mean_value = sum_value / valid_value if valid_value else 0
+        mean_vector = np.append(mean_vector, mean_value)
     return mean_vector
+
+
+def remove_invalid_values(timestamps, features):
+    """Removes the invalid values from both the features and the timestamps.
+
+    It searches for the features with 0 value, and remove them and their timestamps too.
+
+    Args:
+        timestamps: The timestamp as a list.
+        features: The features as a list of numbers.
+
+    Return:
+        A tuple, with the filtered timestamps and features.
+    """
+    invalid_data_points = []
+    for index, feature_value in enumerate(features):
+        if feature_value == 0:
+            invalid_data_points.append(index)
+    timestamps = np.delete(timestamps, invalid_data_points)
+    features = np.delete(features, invalid_data_points)
+    return timestamps, features
 
 
 def preprocess_dataset(square, features, is_training):
@@ -238,9 +266,9 @@ def preprocess_dataset(square, features, is_training):
     4. Split to weekdays and weekends.
     5. Scale.
     6. Select and convert the specified features.
-    7. If it's a training dataset, convert timestamps to the passed minutes each day.
-    8. Sort the arrays based on the timestamps.
-    If the dataset is large, it will run for a while.
+    7. Removes the invalid data points.
+    8. If it's a training dataset, convert timestamps to the passed minutes each day.
+    9. Sort the arrays based on the timestamps.
 
     Args:
         square: The square to read.
@@ -263,6 +291,7 @@ def preprocess_dataset(square, features, is_training):
         category = categories[category_id]
         category[constant.FEATURES] = scale_features(category[constant.FEATURES])
         category[constant.FEATURES] = translate_matrix_to_mean_vector(category[constant.FEATURES])
+        category[constant.TIMESTAMPS], category[constant.FEATURES] = remove_invalid_values(category[constant.TIMESTAMPS], category[constant.FEATURES])
         if is_training:
             category[constant.TIMESTAMPS] = common_function.get_minutes(category[constant.TIMESTAMPS])
         category[constant.TIMESTAMPS], category[constant.FEATURES] = common_function.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
@@ -322,7 +351,7 @@ def group_data_by_day(data):
         data: A dictionary with the following form: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }.
 
     Returns:
-        An array, where each element is a dictionary with the following form: { constant.DAY: [ ... ], constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }.
+        An array, where each element is a dictionary with the following form: { constant.DAY: day, constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }.
     """
     days = np.array([])
     current_day = common_function.date_from_timestamp(data[constant.TIMESTAMPS][0]).day
@@ -346,7 +375,7 @@ def group_data_by_day(data):
 
 
 def reset_scaler():
-    """ It resets the global _SCALER instance.
+    """ Reset the global _SCALER instance.
     """
     global _SCALER
     _SCALER = None

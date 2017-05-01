@@ -95,7 +95,7 @@ def date_from_timestamp(timestamp):
         timestamp: The timestamp as a string.
 
     Return:
-        The date object
+        The date object.
     """
     date = datetime.fromtimestamp(float(timestamp) / 1000.0)
     return date
