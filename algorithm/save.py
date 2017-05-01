@@ -6,6 +6,7 @@ import sqlite3
 
 import constant
 
+
 def write_differences_to_sqlite(square, differences):
     """Saves the given differences to an SQLite database.
 
@@ -28,6 +29,7 @@ def write_differences_to_sqlite(square, differences):
 
     connection.commit()
     connection.close()
+
 
 def read_differences_from_sqlite():
     """ Reads the differences from the constant.DIFFERENCES_DB and print each row.

@@ -53,7 +53,7 @@ def cache_data(files, square, is_training):
         data_cache = _TESTING_DATA_CACHE
 
     for file in files:
-        if file == '/mnt/disk2/tim-bd-challenge/milano-december/sms-call-internet-mi-2014-01-01.txt': # if this inconsitency exists on the dataset, skip this file
+        if file == '/mnt/disk2/tim-bd-challenge/milano-december/sms-call-internet-mi-2014-01-01.txt':  # if this inconsitency exists on the dataset, skip this file
             continue
         with open(file) as tsv_file:
             print('Reading', file, '...')
@@ -62,12 +62,12 @@ def cache_data(files, square, is_training):
                 values = line.split('\t')
 
                 current_square = int(values[0])
-                if (not square is None) and (int(square) == current_square):
+                if square is not None and int(square) == current_square:
                     square_found = True
-                elif (not square is None) and square_found: # assume that that squares are grouped in a file
+                elif square is not None and square_found:  # assume that that squares are grouped in a file
                     break
 
-                if current_square > 3333: # FIXME for optimization purpose
+                if current_square > 3333:  # FIXME for optimization purpose
                     continue
 
                 data_point = {
@@ -79,11 +79,12 @@ def cache_data(files, square, is_training):
                     constant.FEATURE_INTERNET: values[7]
                 }
 
-                if not current_square in data_cache:
+                if current_square not in data_cache:
                     data_cache[current_square] = []
                 data_cache[current_square].append(data_point)
 
     print('Done to caching the files. Time: ', round(time() - start_time, 3), ' sec')
+
 
 def read_data_from_cache(square, is_training):
     """Reades all the data from cache for the specified square.
@@ -342,6 +343,7 @@ def group_data_by_day(data):
                 current_timestamps = np.array([])
                 current_features = np.array([])
     return days
+
 
 def reset_scaler():
     """ It resets the global _SCALER instance.

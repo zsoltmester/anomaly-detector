@@ -13,6 +13,7 @@ import interpolate
 import preprocess
 import save
 
+
 def get_difference_for_day(testing_day_data, training_day_data, unique_timestamps):
     """Return the difference between the given testing and training day for each timestamp.
 
@@ -31,6 +32,7 @@ def get_difference_for_day(testing_day_data, training_day_data, unique_timestamp
         differences[int(timestamp)] = difference
     return differences
 
+
 if __name__ == '__main__':
     algorithm_start_time = time()
 
@@ -46,7 +48,7 @@ if __name__ == '__main__':
     print('Done to initialze the algorithm. Time: ', round(time() - start_time, 3), ' sec')
 
     for square in squares:
-        if square > 3333: # FIXME for optimization purpose
+        if square > 3333:  # FIXME for optimization purpose
             continue
 
         print('*** SQUARE ' + str(square) + ' ***')
@@ -86,8 +88,8 @@ if __name__ == '__main__':
             print('Display the polinomials...')
             for category in [constant.WEEKDAYS, constant.WEEKENDS]:
                 for index, interpolation_polynomial in enumerate(testing_interpolation_polynomials[category]):
-                    differences = get_difference_for_day(testing_data_grouped_by_day[category][index][constant.FEATURES], training_features_mean[category], unique_timestamps);
-                    day = testing_data_grouped_by_day[category][index][constant.DAY];
+                    differences = get_difference_for_day(testing_data_grouped_by_day[category][index][constant.FEATURES], training_features_mean[category], unique_timestamps)
+                    day = testing_data_grouped_by_day[category][index][constant.DAY]
                     print('Differences for day ', day, ':', differences)
 
                     display.display_polinomials(training_data[category], unique_timestamps, training_features_mean[category], training_interpolation_polynomial[category], testing_data_grouped_by_day[category][index], interpolation_polynomial)
@@ -97,14 +99,14 @@ if __name__ == '__main__':
             differences = {}
             for category in [constant.WEEKDAYS, constant.WEEKENDS]:
                 for testing_day_data in testing_data_grouped_by_day[category]:
-                    differences_for_current_day = get_difference_for_day(testing_day_data[constant.FEATURES], training_features_mean[category], unique_timestamps);
+                    differences_for_current_day = get_difference_for_day(testing_day_data[constant.FEATURES], training_features_mean[category], unique_timestamps)
                     differences[testing_day_data[constant.DAY]] = differences_for_current_day
             print('Done to calculate the differences. Time: ', round(time() - start_time, 3), ' sec')
 
             print('Save the differences to the database...')
             start_time = time()
-            save.write_differences_to_sqlite(square, differences);
-            # save.read_differences_from_sqlite(); # for testing purpose
+            save.write_differences_to_sqlite(square, differences)
+            # save.read_differences_from_sqlite()  # for testing purpose
             print('Done to save the differences to the database. Time: ', round(time() - start_time, 3), ' sec')
 
     print('The algorithm finished. Time: ', round(time() - algorithm_start_time, 3), ' sec')
