@@ -67,7 +67,7 @@ def cache_data(files, square, is_training):
                 elif square is not None and square_found:  # assume that that squares are grouped in a file
                     break
 
-                if current_square > 3333:  # FIXME for optimization purpose
+                if current_square > 2500:  # FIXME for optimization purpose
                     continue
 
                 data_point = {

@@ -27,7 +27,10 @@ def get_difference_for_day(testing_day_data, training_day_data, unique_timestamp
     """
     differences = {}
     for timestamp_index, timestamp in enumerate(unique_timestamps):
-        difference = testing_day_data[timestamp_index] - training_day_data[timestamp_index]
+        try:
+            difference = testing_day_data[timestamp_index] - training_day_data[timestamp_index]
+        except IndexError:
+            print('Index error when calaculate a difference. Nothing to do.')
         difference = math.fabs(difference)
         differences[int(timestamp)] = difference
     return differences
@@ -48,7 +51,7 @@ if __name__ == '__main__':
     print('Done to initialze the algorithm. Time: ', round(time() - start_time, 3), ' sec')
 
     for square in squares:
-        if square > 3333:  # FIXME for optimization purpose
+        if square > 2500:  # FIXME for optimization purpose
             continue
 
         print('*** SQUARE ' + str(square) + ' ***')
