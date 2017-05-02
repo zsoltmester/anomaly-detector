@@ -2,3 +2,32 @@ html, body, #map {
 	height: 100%;
 	width: 100%;
 }
+
+#timeperiodSetter {
+  margin-bottom: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+#select {
+  display: inline-block;
+  margin-left: 1%;
+  margin-right: 1%;
+  vertical-align:middle;
+  width: 5%
+}
+
+#slider {
+  display: inline-block;
+  vertical-align:middle;
+  width: 50%
+}
+
+#slider .slider-selection {
+	background: #3e3f3a;
+}
+
+#button {
+  display: inline-block;
+  margin-left: 1%;
+}
