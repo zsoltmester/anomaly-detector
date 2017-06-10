@@ -1,6 +1,6 @@
 # TODO
 
-**Május 15** a határidő. Addig el kell készítenem a programot és a dokumentációt.
+- erdos.inf.elte.hu
 
 ## Program
 
