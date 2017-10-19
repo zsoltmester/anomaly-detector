@@ -35,15 +35,15 @@ A program megírása után kezdek bele.
 
 # Anomaly Detector
 
-This is an anomaly detector for call detail records ([CDR](https://en.wikipedia.org/wiki/Call_detail_record)). It's my BSc thesis, which I'm working on. You can check the announcement at `docs/thesis-announcement.pdf`.
+Searching anomalies in call detail records ([CDR](https://en.wikipedia.org/wiki/Call_detail_record)). It's my BSc thesis. You can check the announcement at `docs/thesis-announcement.pdf`.
 
 ## Dataset
 
-I'm using the Telecom Italia's data. You can download the dataset from [here](https://dandelion.eu/datamine/open-big-data/). It licensed under [ODbL](https://opendatacommons.org/licenses/odbl/).
+Telecom Italia's data. Recorded in Milano in 2013 november and september. You can download the dataset from [here](https://dandelion.eu/datamine/open-big-data/). It licensed under [ODbL](https://opendatacommons.org/licenses/odbl/).
 
-### CDR
+### Description
 
-The description of the CDR dataset is copied to here:
+From *dandelion.eu*:
 
 > This dataset provides information about the telecommunication activity over the city.
 >
@@ -61,29 +61,27 @@ The description of the CDR dataset is copied to here:
 >
 > By aggregating the aforementioned records it was created this dataset that provides SMSs, calls and Internet traffic activity. It measures the level of interaction of the users with the mobile phone network; for example the higher is the number of SMS sent by the users, the higher is the activity of the sent SMS. Measurements of call and SMS activity have the same scale (therefore are comparable); those referring to Internet traffic do not.
 
-#### Schema for CDR
+#### Schema
 
-All the types are numeric.
+From *dandelion.eu*:
 
-1. **Square id**: The id of the square that is part of the city GRID.
-2. **Time interval**: The beginning of the time interval expressed as the number of millisecond elapsed from the Unix Epoch on January 1st, 1970 at UTC. The end of the time interval can be obtained by adding 600000 milliseconds (10 minutes) to this value.
-3. **Country code**: The phone country code of a nation. Depending on the measured activity this value assumes different meanings that are explained later.
-4. **SMS-in activity**: The activity in terms of received SMS inside the Square id, during the Time interval and sent from the nation identified by the Country code.
-5. **SMS-out activity**: The activity in terms of sent SMS inside the Square id, during the Time interval and received by the nation identified by the Country code.
-6. **Call-in activity**: The activity in terms of received calls inside the Square id, during the Time interval and issued from the nation identified by the Country code.
-7. **Call-out activity**: The activity in terms of issued calls inside the Square id, during the Time interval and received by the nation identified by the Country code.
-8. **Internet traffic activity**: The activity in terms of performed internet traffic inside the Square id, during the Time interval and by the nation of the users performing the connection identified by the Country code.
+>1. **Square id**: The id of the square that is part of the city GRID.
+>2. **Time interval**: The beginning of the time interval expressed as the number of millisecond elapsed from the Unix Epoch on January 1st, 1970 at UTC. The end of the time interval can be obtained by adding 600000 milliseconds (10 minutes) to this value.
+>3. **Country code**: The phone country code of a nation. Depending on the measured activity this value assumes different meanings that are explained later.
+>4. **SMS-in activity**: The activity in terms of received SMS inside the Square id, during the Time interval and sent from the nation identified by the Country code.
+>5. **SMS-out activity**: The activity in terms of sent SMS inside the Square id, during the Time interval and received by the nation identified by the Country code.
+>6. **Call-in activity**: The activity in terms of received calls inside the Square id, during the Time interval and issued from the nation identified by the Country code.
+>7. **Call-out activity**: The activity in terms of issued calls inside the Square id, during the Time interval and received by the nation identified by the Country code.
+>8. **Internet traffic activity**: The activity in terms of performed internet traffic inside the Square id, during the Time interval and by the nation of the users performing the connection identified by the Country code.
 
-#### Format for CDR
+#### File Format
 
-Files are in tsv format. If no activity was recorded for a field specified in the schema above then the corresponding value is missing from the file. For example, if for a given combination of the Square id `s`, the Time interval `i` and the Country code `c` no SMS was sent the corresponding record looks as follows:
+From *dandelion.eu*:
 
-`s \t i \t c \t \t SMSout \t Callin \t Callout \t Internettraffic`
-
-where `\t` corresponds to the tab character, `SMSout` is the value corresponding to the SMS-out activity, `Callin` is the value corresponding to the Call-in activity, `Callout` is the value corresponding to the Call-out activity and `internettraffic` is the value corresponding to the  Internet traffic activity.
-
-Moreover, if for a given combination of the Square id `s`, the Time interval `i` and the Country code `c` no activity is recorded the corresponding record is missing from the dataset. This means that records of the following type
-
-`s \t i \t c \t \t \t \t \t`
-
-are not stored in the dataset.
+>Files are in tsv format. If no activity was recorded for a field specified in the schema above then the corresponding value is missing from the file. For example, if for a given combination of the Square id `s`, the Time interval `i` and the Country code `c` no SMS was sent the corresponding record looks as follows:
+>`s \t i \t c \t \t SMSout \t Callin \t Callout \t Internettraffic`
+>where `\t` corresponds to the tab character, `SMSout` is the value corresponding to the SMS-out activity, `Callin` is the value corresponding to the Call-in activity, `Callout` is the value corresponding to the Call-out activity and `internettraffic` is the value corresponding to the  Internet traffic activity.
+>
+>Moreover, if for a given combination of the Square id `s`, the Time interval `i` and the Country code `c` no activity is recorded the corresponding record is missing from the dataset. This means that records of the following type
+>`s \t i \t c \t \t \t \t \t`
+>are not stored in the dataset.
