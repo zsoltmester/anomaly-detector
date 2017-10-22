@@ -15,15 +15,15 @@
   "description": "",
   "private": true,
   "dependencies": {
-    "adonis-ace": "^3.0.7",
+    "adonis-ace": "^3.0.8",
     "adonis-auth": "^1.0.5",
     "adonis-commands": "^2.1.5",
     "adonis-fold": "^3.0.3",
-    "adonis-framework": "^3.0.10",
-    "adonis-lucid": "^3.0.14",
-    "adonis-middleware": "^1.0.11",
+    "adonis-framework": "^3.0.14",
+    "adonis-lucid": "^3.0.16",
+    "adonis-middleware": "^1.0.14",
     "adonis-websocket": "^1.0.3",
-    "youch": "^2.0.4"
+    "youch": "^2.0.5"
   },
   "standard": {
     "global": [
@@ -35,7 +35,7 @@
     "App": "./app"
   },
   "devDependencies": {
-    "nodemon": "^1.11.0",
-    "standard": "^10.0.2"
+    "nodemon": "^1.12.1",
+    "standard": "^10.0.3"
   }
 }

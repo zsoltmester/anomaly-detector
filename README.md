@@ -1,33 +1,25 @@
-# TODO
+- Az **erdos.inf.elte.hu**-t használhatom tesztelésre.
+- `python detect_anomaly.py -h`, de egy példa: `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square 1 --action visualize`
 
-- erdos.inf.elte.hu
+# Spec
+
+- Egyetlen oldalból áll a webapp.
+- Az algoritmusban található az anomália detektáló logika. Ez egy python program. Képes egyidejűleg több szálon vagy folyamaton futtatni az adatfeldolgozást.
+- A webapp backend része az algoritmus futtatásáért és az eredményének feldolgozásáért felel.
+- A webapp frontend része az algoritmus eredményeinek megjelenítéséért felel.
+- A szimuláció inicializálásához ki kell választani a négyzeteket és a kezdődátumot. Van lehetőség elindítani (start), és megállítani (stop) a szimulációt.
+- A szimuláció futását körökre lehet osztani. Minden körben
+	1. lekérjük a backendtől az adatokat a kiválasztott négyzetekre és az aktuális dátumra (közben jelezzük a felhasználóbak, hogy tart az adatfeldolgozás),
+	2. megjelenítjük az adatokat,
+	3. majd várakozunk egy kis ideig (mintha valós időben a következő adatok beérkezésére várnánk) és erről a felhasználót is tájékoztatjuk.
+
+# TODO
 
 ## Program
 
-**A webapp minimális funkciói**:
-- A főoldal nagy részét egy térkép foglalja el. Ez a térkép 10000 cellára van felosztva. A cella színe jelzi, hogy mennyire volt kiugró az aktivitás.
-- Konfigurálható:
-	- *Időszakasz*: Az időszakaszt egy idővonalon a kezdő és a végpont megadásával lehet kiválasztani. A UI segít a szakasz léptetésében / változtatásában.
-- Látható egy színskála, amivel eldönthető, hogy az adott érték mennyire kiugró.
-
-**A webapp minimális funkcióinak megvalósítása**:
-- A térkép egy google maps.
-- A cellák poligonjai assetként mindig elérhető a kliensnek egy geojson-ként.
-- A cellák értékeit a kliens a backendtől kéri le, mégpedig 1 hívással mind a 10000 celláét. A kliens az időszakaszt elküldi a requestben.
-- A színskála statikusan van benne a kliens kódjában.
-
-### algorithm
-
-- Unit tesztek írása.
-
-### webapp
-
-- A kliens jelenítse meg az időszakasz választó komponenst.
-- A kliens jelenítse meg az aktív featureöket választó komponenst.
-- A kliens jelenítse meg a színskálát.
-- A backend ki tudja számolni a cellák értékét és azt vissza tudja küldeni a kliensnek, aki azt megjeleníti.
-- Dokumentációs írása és generáló tool keresése.
-- Unit tesztek írása.
+- Tesztek írása az algoritmushoz.
+- Tesztek írása a webapphoz.
+- Dokumentációs írása és generáló tool keresése a webapphoz.
 
 ## Dokumentáció
 
