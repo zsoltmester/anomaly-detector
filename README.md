@@ -1,5 +1,6 @@
 - Az **erdos.inf.elte.hu**-t használhatom tesztelésre.
 - `python detect_anomaly.py -h`, de egy példa: `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square 1 --action visualize`
+- `npm run serve:dev` (development), `npm run serve` (production)
 
 # Spec
 
@@ -15,15 +16,7 @@
 
 # TODO
 
-## Program
-
-- Tesztek írása az algoritmushoz.
-- Tesztek írása a webapphoz.
-- Dokumentációs írása és generáló tool keresése a webapphoz.
-
-## Dokumentáció
-
-A program megírása után kezdek bele.
+- A klienst felkészíteni és dummy adatokkal működtetni.
 
 # Anomaly Detector
 
