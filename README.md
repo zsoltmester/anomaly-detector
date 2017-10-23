@@ -18,8 +18,9 @@
 
 - A klienst felkészíteni és dummy adatokkal működtetni.
 - Az algoritmust felkészíteni és a modelleket legenerálni.
-- Majdnem teljes funkcionalitással működő app.
-- UX fejlesztések.
+- A klienst és az algoritmust összekötni a backend segítségével.
+- Kitörölni az npm lint-et.
+- Design frissítés.
 
 # Anomaly Detector
 
