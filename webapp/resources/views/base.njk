@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>
-    {% block title %}{% endblock %}
-  </title>
+    <title>
+        {% block title %}{% endblock %}
+    </title>
 
-  <link rel="icon" href="/assets/favicon.png" type="image/x-icon">
-  <link href="/libs/bootstrap.min.css" rel="stylesheet">
-  {% block style %}{% endblock %}
-  <link href="/style.css" rel="stylesheet">
+    <link rel="icon" href="/assets/favicon.png" type="image/x-icon">
+    <link href="/libs/bootstrap.min.css" rel="stylesheet">
+    {% block style %}{% endblock %}
+    <link href="/style.css" rel="stylesheet">
 
 </head>
 <body>
-  {% include 'navbar' %}
+    {% include 'navbar' %}
 
-  {% block content %}{% endblock %}
-  
-  <script src="/libs/jquery-3.2.1.min.js"></script>
-  {% block scripts %}{% endblock %}
+    {% block content %}{% endblock %}
+
+    <script src="/libs/jquery-3.2.1.min.js"></script>
+    <script src="/libs/bootstrap.min.js"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

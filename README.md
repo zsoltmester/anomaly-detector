@@ -17,6 +17,9 @@
 # TODO
 
 - A klienst felkészíteni és dummy adatokkal működtetni.
+- Az algoritmust felkészíteni és a modelleket legenerálni.
+- Majdnem teljes funkcionalitással működő app.
+- UX fejlesztések.
 
 # Anomaly Detector
 
