@@ -1,19 +1,13 @@
-var map
-function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: 45.465055, lng: 9.186954},
-        zoom: 13
-    })
-    // map.data.loadGeoJson('/assets/milano-grid.geojson')
-}
-
 //
 // **********
 // Properties
 // **********
 //
 
+var map
 let areaInput = $('#areaInput')
+var squares
+var squareViews
 
 let daySelect = $('#daySelect')
 let hourSelect = $('#hourSelect')
@@ -47,6 +41,13 @@ controlButton.click(onControlButtonClick)
 // Functions
 // *********
 //
+
+function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 45.465055, lng: 9.186954},
+        zoom: 13
+    })
+}
 
 function onToDateChanged(event) {
 
@@ -138,11 +139,16 @@ function startSimulation() {
     loadGeoJson(function(status, response) {
 
         if (status != '200') {
+            onControlButtonClick()
             infoText.text('Couldn\'t load the squares.')
             return
         }
 
-        var geoJson = JSON.parse(response)
+        let geoJson = JSON.parse(response)
+        let squareIds = parseSquareIdsFromAreaInput()
+        parseSquaresFromGeoJson(geoJson, squareIds)
+        updateSquareViews()
+
         processData()
     })
 }
@@ -178,6 +184,7 @@ function waitForNextRound() {
     } else {
 
         onControlButtonClick()
+        infoText.text('No more data available')
     }
 }
 
@@ -195,4 +202,86 @@ function loadGeoJson(callback) {
     }
 
     request.send(null)
+}
+
+function parseSquaresFromGeoJson(geoJson, squareIds) {
+
+    squares = []
+
+    for (squareId of squareIds) {
+
+        var squareCoordinates = []
+
+        for (let squareCoordinate of geoJson.features[squareId].geometry.coordinates[0]) {
+
+            squareCoordinates.push({lat: squareCoordinate[1], lng: squareCoordinate[0]})
+        }
+
+        squares.push({id: squareId, coordinates: squareCoordinates})
+    }
+}
+
+function updateSquareViews() {
+
+    removeSquareViews()
+    createSquareViewsFromSquares()
+    displaySquareViews()
+}
+
+function createSquareViewsFromSquares() {
+
+    squareViews = []
+
+    for (square of squares) {
+
+        let squareView = new google.maps.Polygon({
+          paths: square.coordinates,
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.8,
+          strokeWeight: 3,
+          fillColor: '#FF0000',
+          fillOpacity: 0.35
+        })
+
+        squareViews.push(squareView)
+    }
+}
+
+function displaySquareViews() {
+
+    if (!$.isArray(squareViews)) {
+
+        return
+    }
+
+    for (squareView of squareViews) {
+
+        squareView.setMap(map)
+    }
+}
+
+function removeSquareViews() {
+
+    if (!$.isArray(squareViews)) {
+
+        return
+    }
+
+    for (squareView of squareViews) {
+
+        squareView.setMap(null)
+    }
+}
+
+function parseSquareIdsFromAreaInput() {
+
+    var squareIds = []
+    let input = areaInput.val().split(',')
+
+    for (rawSquareId of input) {
+
+        squareIds.push(parseInt(rawSquareId.trim()))
+    }
+
+    return squareIds
 }
