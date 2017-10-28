@@ -8,7 +8,9 @@ function initMap() {
 }
 
 //
+// **********
 // Properties
+// **********
 //
 
 let areaInput = $('#areaInput')
@@ -26,7 +28,9 @@ let infoText = $('#infoText')
 let isSimulationRunning = false
 
 //
+// **************
 // Initialization
+// **************
 //
 
 // from and to date
@@ -39,7 +43,9 @@ updateTheFromDate()
 controlButton.click(onControlButtonClick)
 
 //
+// *********
 // Functions
+// *********
 //
 
 function onToDateChanged(event) {
@@ -127,7 +133,18 @@ function onControlButtonClick() {
 
 function startSimulation() {
 
-    processData()
+    infoText.text('Loading the map...')
+
+    loadGeoJson(function(status, response) {
+
+        if (status != '200') {
+            infoText.text('Couldn\'t load the squares.')
+            return
+        }
+
+        var geoJson = JSON.parse(response)
+        processData()
+    })
 }
 
 function continueSimulation() {
@@ -162,4 +179,20 @@ function waitForNextRound() {
 
         onControlButtonClick()
     }
+}
+
+function loadGeoJson(callback) {
+
+    var request = new XMLHttpRequest()
+    request.overrideMimeType('application/json')
+    request.open('GET', '/assets/milano-grid.geojson', true)
+
+    request.onreadystatechange = function () {
+
+        if (request.readyState == 4) {
+            callback(request.status, request.responseText)
+        }
+    }
+
+    request.send(null)
 }
