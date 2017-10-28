@@ -16,7 +16,7 @@ Anomaly Detector
         <label class="control-label">Time Period</label>
         <p>In 2013 december</p>
         <div class="form-inline">
-            From day <span id="fromDayText">1</span> at <span id="fromHourText">10</span>:<span id="fromMinuteText">30</span>
+            From day <span id="fromDayText">1</span> at <span id="fromHourText">0</span>:<span id="fromMinuteText">00</span>
         </div>
         <div class="form-inline">
             To day
@@ -89,6 +89,13 @@ Anomaly Detector
                 <option>40</option>
                 <option>50</option>
             </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label">Control</label>
+        <div class="form-inline">
+            <a class="btn btn-success" id="controlButton">Run</a>
+            <span class="text-info" id="infoText"></span>
         </div>
     </div>
   <div id="map"></div>

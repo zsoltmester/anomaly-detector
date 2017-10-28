@@ -11,23 +11,32 @@ function initMap() {
 // Properties
 //
 
-let daySelect = $("#daySelect")
-let hourSelect = $("#hourSelect")
-let minuteSelect = $("#minuteSelect")
+let areaInput = $('#areaInput')
 
-let fromDayText = $("#fromDayText")
-let fromHourText = $("#fromHourText")
-let fromMinuteText = $("#fromMinuteText")
+let daySelect = $('#daySelect')
+let hourSelect = $('#hourSelect')
+let minuteSelect = $('#minuteSelect')
+
+let fromDayText = $('#fromDayText')
+let fromHourText = $('#fromHourText')
+let fromMinuteText = $('#fromMinuteText')
+
+let controlButton = $('#controlButton')
+let infoText = $('#infoText')
+let isSimulationRunning = false
 
 //
 // Initialization
 //
 
-daySelect.change(onToDateChanged);
-hourSelect.change(onToDateChanged);
-minuteSelect.change(onToDateChanged);
-
+// from and to date
+daySelect.change(onToDateChanged)
+hourSelect.change(onToDateChanged)
+minuteSelect.change(onToDateChanged)
 updateTheFromDate()
+
+// control button
+controlButton.click(onControlButtonClick)
 
 //
 // Functions
@@ -44,27 +53,113 @@ function onToDateChanged(event) {
 
 function updateTheFromDate() {
 
-    let minute = minuteSelect.val() - 10
-    var hour = hourSelect.val()
-    var day = daySelect.val()
+    let minute = parseInt(minuteSelect.val()) - 10
+    var hour = parseInt(hourSelect.val())
+    var day = parseInt(daySelect.val())
 
     if (minute < 0) {
 
         minute = 50
-        hour = hourSelect.val() - 1
+        hour -= 1
 
         if (hour < 0) {
 
             hour = 23
-            day = daySelect.val() - 1
+            day -= 1
         }
     }
 
     if (minute == 0) {
-        minute = "00"
+        minute = '00'
     }
 
     fromMinuteText.text(minute)
     fromHourText.text(hour)
     fromDayText.text(day)
+}
+
+function incrementTheToDate() {
+
+    let minute = parseInt(minuteSelect.val()) + 10
+    var hour = parseInt(hourSelect.val())
+    var day = parseInt(daySelect.val())
+
+    if (minute > 50) {
+
+        minute = 0
+        hour += 1
+
+        if (hour > 23) {
+
+            hour = 0
+            day += 1
+        }
+    }
+
+    minuteSelect.val(minute)
+    hourSelect.val(hour)
+    daySelect.val(day)
+}
+
+function onControlButtonClick() {
+
+    var classToRemove = isSimulationRunning ? 'btn-danger' : 'btn-success'
+    var classToAdd = isSimulationRunning ? 'btn-success' : 'btn-danger'
+    var label = isSimulationRunning ? 'Run' : 'Stop'
+
+    controlButton.removeClass(classToRemove)
+    controlButton.addClass(classToAdd)
+    controlButton.text(label)
+
+    isSimulationRunning = !isSimulationRunning
+
+    areaInput.prop('disabled', isSimulationRunning)
+    daySelect.prop('disabled', isSimulationRunning)
+    hourSelect.prop('disabled', isSimulationRunning)
+    minuteSelect.prop('disabled', isSimulationRunning)
+
+    if (isSimulationRunning) {
+        startSimulation()
+    } else {
+        infoText.text('')
+    }
+}
+
+function startSimulation() {
+
+    processData()
+}
+
+function continueSimulation() {
+
+    incrementTheToDate()
+    updateTheFromDate()
+    processData()
+}
+
+function processData() {
+
+    if (!isSimulationRunning) {
+        return
+    }
+
+    infoText.text('Processing data...')
+    setTimeout(waitForNextRound, 2500)
+}
+
+function waitForNextRound() {
+
+    if (!isSimulationRunning) {
+        return
+    }
+
+    if (!(daySelect.val() == 31 && hourSelect.val() == 23 && minuteSelect.val() == 50)) {
+
+        infoText.text('Waiting for the next pack of data...')
+        setTimeout(continueSimulation, 5000)
+
+    } else {
+
+        onControlButtonClick()
+    }
 }
