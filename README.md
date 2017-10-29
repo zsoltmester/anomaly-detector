@@ -16,7 +16,6 @@
 
 # TODO
 
-- A klienst felkészíteni és dummy adatokkal működtetni.
 - Az algoritmust felkészíteni és a modelleket legenerálni.
 - A klienst és az algoritmust összekötni a backend segítségével.
 - Kitörölni az npm lint-et.

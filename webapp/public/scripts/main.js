@@ -8,6 +8,7 @@ var map
 let areaInput = $('#areaInput')
 var squares
 var squareViews
+var infoView
 
 let daySelect = $('#daySelect')
 let hourSelect = $('#hourSelect')
@@ -47,6 +48,7 @@ function initMap() {
         center: {lat: 45.465055, lng: 9.186954},
         zoom: 13
     })
+    infoView = new google.maps.InfoWindow
 }
 
 function onToDateChanged(event) {
@@ -176,7 +178,7 @@ function downloadData() {
 function processData() {
 
     for (square of squares) {
-        square.activity = Math.random()
+        square.anomaly = Math.random()
     }
 
     waitForNextRound()
@@ -231,12 +233,13 @@ function parseSquaresFromGeoJson(geoJson, squareIds) {
             squareCoordinates.push({lat: squareCoordinate[1], lng: squareCoordinate[0]})
         }
 
-        squares.push({id: squareId, coordinates: squareCoordinates, activity: 0})
+        squares.push({id: squareId, coordinates: squareCoordinates, anomaly: 0})
     }
 }
 
 function updateSquareViews() {
 
+    infoView.setMap(null)
     removeSquareViews()
     createSquareViewsFromSquares()
     displaySquareViews()
@@ -254,7 +257,14 @@ function createSquareViewsFromSquares() {
           strokeOpacity: 0.75,
           strokeWeight: 2,
           fillColor: '#FF0000',
-          fillOpacity: square.activity
+          fillOpacity: square.anomaly
+        })
+
+        let clickedSquare = square
+
+        squareView.addListener('click', function (event) {
+
+            onSquareViewClick(event, clickedSquare)
         })
 
         squareViews.push(squareView)
@@ -298,4 +308,12 @@ function parseSquareIdsFromAreaInput() {
     }
 
     return squareIds
+}
+
+function onSquareViewClick(event, square) {
+
+    infoView.setContent("anomaly: " + square.anomaly)
+    infoView.setPosition(event.latLng)
+
+    infoView.open(map)
 }
