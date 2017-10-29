@@ -149,7 +149,7 @@ function startSimulation() {
         parseSquaresFromGeoJson(geoJson, squareIds)
         updateSquareViews()
 
-        processData()
+        downloadData()
     })
 }
 
@@ -157,17 +157,29 @@ function continueSimulation() {
 
     incrementTheToDate()
     updateTheFromDate()
-    processData()
+    downloadData()
 }
 
-function processData() {
+function downloadData() {
 
     if (!isSimulationRunning) {
         return
     }
 
     infoText.text('Processing data...')
-    setTimeout(waitForNextRound, 2500)
+
+    // TODO: download the real activities from the backend
+
+    setTimeout(processData, 2500)
+}
+
+function processData() {
+
+    for (square of squares) {
+        square.activity = Math.random()
+    }
+
+    waitForNextRound()
 }
 
 function waitForNextRound() {
@@ -175,6 +187,8 @@ function waitForNextRound() {
     if (!isSimulationRunning) {
         return
     }
+
+    updateSquareViews()
 
     if (!(daySelect.val() == 31 && hourSelect.val() == 23 && minuteSelect.val() == 50)) {
 
@@ -217,7 +231,7 @@ function parseSquaresFromGeoJson(geoJson, squareIds) {
             squareCoordinates.push({lat: squareCoordinate[1], lng: squareCoordinate[0]})
         }
 
-        squares.push({id: squareId, coordinates: squareCoordinates})
+        squares.push({id: squareId, coordinates: squareCoordinates, activity: 0})
     }
 }
 
@@ -237,10 +251,10 @@ function createSquareViewsFromSquares() {
         let squareView = new google.maps.Polygon({
           paths: square.coordinates,
           strokeColor: '#FF0000',
-          strokeOpacity: 0.8,
-          strokeWeight: 3,
+          strokeOpacity: 0.75,
+          strokeWeight: 2,
           fillColor: '#FF0000',
-          fillOpacity: 0.35
+          fillOpacity: square.activity
         })
 
         squareViews.push(squareView)
