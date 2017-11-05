@@ -16,6 +16,8 @@
 
 # TODO
 
+python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --action save > log2500.txt 2>&1
+
 - Az algoritmust felkészíteni és a modelleket legenerálni.
 - A klienst és az algoritmust összekötni a backend segítségével.
 - Kitörölni az npm lint-et.
