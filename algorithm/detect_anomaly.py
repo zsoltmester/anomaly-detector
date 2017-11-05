@@ -66,9 +66,6 @@ if __name__ == '__main__':
     print('Done to initialze the algorithm. Time: ', round(time() - start_time, 3), ' sec')
 
     for square in squares:
-        if square > 2500:  # FIXME for optimization purpose
-            continue
-
         print('*** SQUARE ' + str(square) + ' ***')
 
         print('Preprocess the datasets...')

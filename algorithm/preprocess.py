@@ -53,7 +53,7 @@ def cache_data(files, square, is_training):
         data_cache = _TESTING_DATA_CACHE
 
     for file in files:
-        if file == '/mnt/disk2/tim-bd-challenge/milano-december/sms-call-internet-mi-2014-01-01.txt':  # if this inconsitency exists on the dataset, skip this file
+        if 'sms-call-internet-mi-2014-01-01.txt' in file:  # if this inconsitency exists on the dataset, skip this file
             continue
         with open(file) as tsv_file:
             print('Reading', file, '...')
@@ -67,7 +67,7 @@ def cache_data(files, square, is_training):
                 elif square is not None and square_found:  # assume that that squares are grouped in a file
                     break
 
-                if current_square > 2500:  # FIXME for optimization purpose
+                if square is None and current_square > 2500: # FIXME for optimization purpose
                     continue
 
                 data_point = {
