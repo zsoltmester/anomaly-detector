@@ -52,7 +52,7 @@ def initialise():
     else:
         if square:
             print('Square parameter has no effect in save mode.')
-        squares = list(range(2501, 5000)) # FIXME for optimization purpose
+        squares = list(range(5000, 7501)) # FIXME for optimization purpose
 
     training_files_root = args['training']
     training_files = common_function.collect_files_in_dir(training_files_root)

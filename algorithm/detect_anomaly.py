@@ -70,9 +70,13 @@ if __name__ == '__main__':
 
         print('Preprocess the datasets...')
         start_time = time()
-        # preprocess the training and testing datasets
-        training_data = preprocess.preprocess_dataset(square, features, is_training=True)
-        testing_data = preprocess.preprocess_dataset(square, features, is_training=False)
+        try:
+            # preprocess the training and testing datasets
+            training_data = preprocess.preprocess_dataset(square, features, is_training=True)
+            testing_data = preprocess.preprocess_dataset(square, features, is_training=False)
+        except Exception:
+            print('No data for square (' + str(square) + '), skip.')
+            continue
         preprocess.reset_scaler()
 
         # sorted and unique training timestamps for a day, in minutes
