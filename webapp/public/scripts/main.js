@@ -4,6 +4,8 @@
 // **********
 //
 
+let INVALID_ANOMALY_VALUE = -1
+
 var map
 let areaInput = $('#areaInput')
 var squares
@@ -20,7 +22,7 @@ let fromMinuteText = $('#fromMinuteText')
 
 let controlButton = $('#controlButton')
 let infoText = $('#infoText')
-let isSimulationRunning = false
+var isSimulationRunning = false
 
 //
 // **************
@@ -168,20 +170,53 @@ function downloadData() {
         return
     }
 
-    infoText.text('Processing data...')
+    infoText.text('Downloading data...')
 
-    // TODO: download the real activities from the backend
-
-    setTimeout(processData, 2500)
-}
-
-function processData() {
+    var squaresToDownload = squares.length
 
     for (square of squares) {
-        square.anomaly = Math.random()
-    }
 
-    waitForNextRound()
+        let currentSquare = square
+
+        co(function*() {
+
+            Promise.resolve(
+
+                    $.ajax({
+                        url: '/detectanomaly',
+                        method: 'GET',
+                        data: {
+                            'square': currentSquare.id,
+                            'day': daySelect.val(),
+                            'hour': hourSelect.val(),
+                            'minute': minuteSelect.val()
+                        }
+                    })
+
+                ).then(function(data) {
+
+                    currentSquare.anomaly = parseFloat(data)
+
+                    squaresToDownload--
+
+                    if (squaresToDownload > 0) {
+                        return
+                    }
+
+                    updateSquareViews()
+                    waitForNextRound()
+
+                })
+
+                .catch(function(error) {
+
+                    console.log('Error while accessing detectanomaly service: ' + error)
+                    onControlButtonClick()
+                    infoText.text('Something unexpected happened.')
+                })
+
+        }.bind(this))
+    }
 }
 
 function waitForNextRound() {
@@ -189,8 +224,6 @@ function waitForNextRound() {
     if (!isSimulationRunning) {
         return
     }
-
-    updateSquareViews()
 
     if (!(daySelect.val() == 31 && hourSelect.val() == 23 && minuteSelect.val() == 50)) {
 
@@ -233,7 +266,7 @@ function parseSquaresFromGeoJson(geoJson, squareIds) {
             squareCoordinates.push({lat: squareCoordinate[1], lng: squareCoordinate[0]})
         }
 
-        squares.push({id: squareId, coordinates: squareCoordinates, anomaly: 0})
+        squares.push({id: squareId, coordinates: squareCoordinates, anomaly: INVALID_ANOMALY_VALUE})
     }
 }
 
@@ -253,11 +286,11 @@ function createSquareViewsFromSquares() {
 
         let squareView = new google.maps.Polygon({
           paths: square.coordinates,
-          strokeColor: '#FF0000',
+          strokeColor: square.anomaly == INVALID_ANOMALY_VALUE ? '#FFFFFF' : '#FF0000',
           strokeOpacity: 0.75,
           strokeWeight: 2,
-          fillColor: '#FF0000',
-          fillOpacity: square.anomaly
+          fillColor: square.anomaly == INVALID_ANOMALY_VALUE ? '#FFFFFF' : '#FF0000',
+          fillOpacity: square.anomaly == INVALID_ANOMALY_VALUE ? 1 : square.anomaly
         })
 
         let clickedSquare = square
@@ -312,7 +345,7 @@ function parseSquareIdsFromAreaInput() {
 
 function onSquareViewClick(event, square) {
 
-    infoView.setContent("anomaly: " + square.anomaly)
+    infoView.setContent("anomaly: " + (square.anomaly == INVALID_ANOMALY_VALUE ? 'no data available' : square.anomaly))
     infoView.setPosition(event.latLng)
 
     infoView.open(map)

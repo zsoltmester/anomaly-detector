@@ -1,6 +1,7 @@
 - Az **erdos.inf.elte.hu**-t használhatom tesztelésre.
 - `python detect_anomaly.py -h`, de egy példa: `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square 1 --action visualize`
 - `npm run serve:dev` (development), `npm run serve` (production)
+- `python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --action save > log2500.txt 2>&1`
 
 # Spec
 
@@ -10,17 +11,14 @@
 - A webapp frontend része az algoritmus eredményeinek megjelenítéséért felel.
 - A szimuláció inicializálásához ki kell választani a négyzeteket és a kezdődátumot. Van lehetőség elindítani (start), és megállítani (stop) a szimulációt.
 - A szimuláció futását körökre lehet osztani. Minden körben
-	1. lekérjük a backendtől az adatokat a kiválasztott négyzetekre és az aktuális dátumra (közben jelezzük a felhasználóbak, hogy tart az adatfeldolgozás),
+	1. lekérjük a backendtől az adatokat a kiválasztott négyzetekre és az aktuális dátumra (közben jelezzük a felhasználónak, hogy tart az adatfeldolgozás),
 	2. megjelenítjük az adatokat,
 	3. majd várakozunk egy kis ideig (mintha valós időben a következő adatok beérkezésére várnánk) és erről a felhasználót is tájékoztatjuk.
 
 # TODO
 
-python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --action save > log2500.txt 2>&1
-
-- Az algoritmust felkészíteni és a modelleket legenerálni.
-- A klienst és az algoritmust összekötni a backend segítségével.
-- Kitörölni az npm lint-et.
+- A modelleket legenerálni (8k-tól 10k-ig maradt).
+- A backendben az adatokat az adatbázisból szedni.
 - Design frissítés.
 
 # Anomaly Detector
