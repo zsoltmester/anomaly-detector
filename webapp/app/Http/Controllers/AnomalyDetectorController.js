@@ -12,7 +12,7 @@ class AnomalyDetectorController {
 		var hour = request.input('hour')
 		var minute = request.input('minute')
 
-		var minutes = hour * 60 + minute
+		var minutes = parseInt(hour) * 60 + parseInt(minute)
 
 		const differences = yield Database
 			.select('square', 'difference')
