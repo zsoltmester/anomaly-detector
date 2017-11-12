@@ -172,6 +172,13 @@ function downloadData() {
 
     infoText.text('Processing data...')
 
+    for (square of squares) {
+
+        square.anomaly = INVALID_ANOMALY_VALUE
+    }
+
+    updateSquareViews()
+
     var squaresIds = ""
 
     for (square of squares) {
@@ -199,11 +206,6 @@ function downloadData() {
                 })
 
             ).then(function(response) {
-
-                for (square of squares) {
-
-                    square.anomaly = INVALID_ANOMALY_VALUE
-                }
 
                 for (squareDifference of response) {
 
@@ -241,7 +243,7 @@ function waitForNextRound() {
     if (!(daySelect.val() == 31 && hourSelect.val() == 23 && minuteSelect.val() == 50)) {
 
         infoText.text('Waiting for the next pack of data...')
-        setTimeout(continueSimulation, 5000)
+        setTimeout(continueSimulation, 10000)
 
     } else {
 
