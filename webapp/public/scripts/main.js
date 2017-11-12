@@ -114,6 +114,10 @@ function startSimulation() {
             return
         }
 
+        if (!isSimulationRunning) {
+            return
+        }
+
         let geoJson = JSON.parse(response)
         let squareIds = parseSquareIdsFromAreaInput()
         parseSquaresFromGeoJson(geoJson, squareIds)
@@ -125,15 +129,15 @@ function startSimulation() {
 
 function continueSimulation() {
 
+    if (!isSimulationRunning) {
+        return
+    }
+
     incrementTheToDate()
     downloadData()
 }
 
 function downloadData() {
-
-    if (!isSimulationRunning) {
-        return
-    }
 
     infoText.text('Processing data...')
 
@@ -172,6 +176,10 @@ function downloadData() {
 
             ).then(function(response) {
 
+                if (!isSimulationRunning) {
+                    return
+                }
+
                 for (squareDifference of response) {
 
                     for (square of squares) {
@@ -190,6 +198,10 @@ function downloadData() {
 
             .catch(function(error) {
 
+                if (!isSimulationRunning) {
+                    return
+                }
+
                 console.log('Error while accessing detectanomaly service: ')
                 console.log(error)
                 onControlButtonClick()
@@ -201,14 +213,10 @@ function downloadData() {
 
 function waitForNextRound() {
 
-    if (!isSimulationRunning) {
-        return
-    }
-
     if (!(daySelect.val() == 31 && hourSelect.val() == 23 && minuteSelect.val() == 50)) {
 
         infoText.text('Waiting for the next pack of data...')
-        setTimeout(continueSimulation, 10000)
+        setTimeout(continueSimulation, 5000)
 
     } else {
 
