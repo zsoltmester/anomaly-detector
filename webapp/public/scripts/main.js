@@ -172,52 +172,64 @@ function downloadData() {
 
     infoText.text('Processing data...')
 
-    var squaresToDownload = squares.length
+    var squaresIds = ""
 
     for (square of squares) {
 
-        let currentSquare = square
+        if (squaresIds.length > 0) {
+            squaresIds += ","
+        }
 
-        co(function*() {
-
-            Promise.resolve(
-
-                    $.ajax({
-                        url: '/detectanomaly',
-                        method: 'GET',
-                        data: {
-                            'square': currentSquare.id,
-                            'day': daySelect.val(),
-                            'hour': hourSelect.val(),
-                            'minute': minuteSelect.val()
-                        }
-                    })
-
-                ).then(function(data) {
-
-                    currentSquare.anomaly = parseFloat(data)
-
-                    squaresToDownload--
-
-                    if (squaresToDownload > 0) {
-                        return
-                    }
-
-                    updateSquareViews()
-                    waitForNextRound()
-
-                })
-
-                .catch(function(error) {
-
-                    console.log('Error while accessing detectanomaly service: ')
-                    console.log(error)
-                    onControlButtonClick()
-                    infoText.text('Something unexpected happened.')
-                })
-
-        }.bind(this))
+        squaresIds += String(square.id)
     }
+
+    co(function*() {
+
+        Promise.resolve(
+
+                $.ajax({
+                    url: '/detectanomaly',
+                    method: 'GET',
+                    data: {
+                        'squares': squaresIds,
+                        'day': daySelect.val(),
+                        'hour': hourSelect.val(),
+                        'minute': minuteSelect.val()
+                    }
+                })
+
+            ).then(function(response) {
+
+                for (square of squares) {
+
+                    square.anomaly = INVALID_ANOMALY_VALUE
+                }
+
+                for (squareDifference of response) {
+
+                    for (square of squares) {
+
+                        if (square.id == parseInt(squareDifference.square)) {
+
+                            square.anomaly = squareDifference.difference
+                        }
+                    }
+                }
+
+                updateSquareViews()
+                waitForNextRound()
+
+            })
+
+            .catch(function(error) {
+
+                console.log('Error while accessing detectanomaly service: ')
+                console.log(error)
+                onControlButtonClick()
+                infoText.text('Something unexpected happened.')
+            })
+
+    }.bind(this))
 }
 
 function waitForNextRound() {

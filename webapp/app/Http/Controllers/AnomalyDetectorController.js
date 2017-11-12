@@ -7,27 +7,21 @@ class AnomalyDetectorController {
 	*
 	detectAnomaly(request, response) {
 
-		var square = request.input('square')
+		var squares = request.input('squares').split(',')
 		var day = request.input('day')
 		var hour = request.input('hour')
 		var minute = request.input('minute')
 
 		var minutes = hour * 60 + minute
 
-		const anomaly = yield Database
-			.select('difference')
+		const differences = yield Database
+			.select('square', 'difference')
 			.from('differences')
-			.where('square', square)
+			.whereIn('square', squares)
 			.where('day', day)
 			.where('minutes', minutes)
-			.limit(1)
 
-		if (anomaly == null) {
-			response.send(-1)
-			return
-		}
-
-		response.send(anomaly[0].difference)
+		response.send(differences)
 	}
 }
 
