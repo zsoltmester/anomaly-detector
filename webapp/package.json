@@ -21,6 +21,7 @@
     "adonis-lucid": "^3.0.16",
     "adonis-middleware": "^1.0.14",
     "adonis-websocket": "^1.0.3",
+    "sqlite3": "^3.1.13",
     "youch": "^2.0.5"
   },
   "standard": {

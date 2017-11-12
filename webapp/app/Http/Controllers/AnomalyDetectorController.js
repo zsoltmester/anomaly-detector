@@ -1,5 +1,7 @@
 'use strict'
 
+const Database = use('Database')
+
 class AnomalyDetectorController {
 
 	*
@@ -10,17 +12,22 @@ class AnomalyDetectorController {
 		var hour = request.input('hour')
 		var minute = request.input('minute')
 
-		console.log('square: ' + square);
-		console.log('day: ' + day);
-		console.log('hour: ' + hour);
-		console.log('minute: ' + minute);
+		var minutes = hour * 60 + minute
 
-		var anomaly = Math.random()
-		if (anomaly < 0.25) {
-			anomaly = -1
+		const anomaly = yield Database
+			.select('difference')
+			.from('differences')
+			.where('square', square)
+			.where('day', day)
+			.where('minutes', minutes)
+			.limit(1)
+
+		if (anomaly == null) {
+			response.send(-1)
+			return
 		}
 
-		response.send(anomaly)
+		response.send(anomaly[0].difference)
 	}
 }
 

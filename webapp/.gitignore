@@ -1,9 +1,8 @@
 !.gitkeep
 
-
 npm-debug.log
 
 /.env
 /node_modules
 /storage
-webapp/database/differences.sqlite
+/database/differences.sqlite

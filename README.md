@@ -17,8 +17,6 @@
 
 # TODO
 
-- A modelleket legenerálni (8k-tól 10k-ig maradt).
-- A backendben az adatokat az adatbázisból szedni.
 - Design frissítés.
 
 # Anomaly Detector

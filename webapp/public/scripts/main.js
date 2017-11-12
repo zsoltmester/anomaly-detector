@@ -170,7 +170,7 @@ function downloadData() {
         return
     }
 
-    infoText.text('Downloading data...')
+    infoText.text('Processing data...')
 
     var squaresToDownload = squares.length
 
@@ -210,7 +210,8 @@ function downloadData() {
 
                 .catch(function(error) {
 
-                    console.log('Error while accessing detectanomaly service: ' + error)
+                    console.log('Error while accessing detectanomaly service: ')
+                    console.log(error)
                     onControlButtonClick()
                     infoText.text('Something unexpected happened.')
                 })
@@ -290,7 +291,7 @@ function createSquareViewsFromSquares() {
           strokeOpacity: 0.75,
           strokeWeight: 2,
           fillColor: square.anomaly == INVALID_ANOMALY_VALUE ? '#FFFFFF' : '#FF0000',
-          fillOpacity: square.anomaly == INVALID_ANOMALY_VALUE ? 1 : square.anomaly
+          fillOpacity: square.anomaly == INVALID_ANOMALY_VALUE ? 0.5 : square.anomaly
         })
 
         let clickedSquare = square
