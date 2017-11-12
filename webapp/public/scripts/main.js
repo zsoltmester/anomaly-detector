@@ -278,7 +278,7 @@ function createSquareViewsFromSquares() {
           strokeOpacity: 0.75,
           strokeWeight: 2,
           fillColor: square.anomaly == INVALID_ANOMALY_VALUE ? '#FFFFFF' : '#FF0000',
-          fillOpacity: square.anomaly == INVALID_ANOMALY_VALUE ? 0.5 : square.anomaly
+          fillOpacity: square.anomaly == INVALID_ANOMALY_VALUE ? 0.5 : (square.anomaly > 1 ? 1 : square.anomaly)
         })
 
         let clickedSquare = square
@@ -333,7 +333,7 @@ function parseSquareIdsFromAreaInput() {
 
 function onSquareViewClick(event, square) {
 
-    infoView.setContent("anomaly: " + (square.anomaly == INVALID_ANOMALY_VALUE ? 'no data available' : square.anomaly))
+    infoView.setContent((square.anomaly == INVALID_ANOMALY_VALUE ? 'No data available' : '<p>Difference from normal behaviour</p>' + String(square.anomaly)))
     infoView.setPosition(event.latLng)
 
     infoView.open(map)
