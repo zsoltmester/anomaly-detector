@@ -17,7 +17,8 @@
 
 # TODO
 
-- Design frissítés.
+- Square kiválasztó képernyő.
+- Az info window fejlesztése.
 
 # Anomaly Detector
 

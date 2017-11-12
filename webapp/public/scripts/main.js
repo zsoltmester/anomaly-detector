@@ -16,10 +16,6 @@ let daySelect = $('#daySelect')
 let hourSelect = $('#hourSelect')
 let minuteSelect = $('#minuteSelect')
 
-let fromDayText = $('#fromDayText')
-let fromHourText = $('#fromHourText')
-let fromMinuteText = $('#fromMinuteText')
-
 let controlButton = $('#controlButton')
 let infoText = $('#infoText')
 var isSimulationRunning = false
@@ -34,7 +30,6 @@ var isSimulationRunning = false
 daySelect.change(onToDateChanged)
 hourSelect.change(onToDateChanged)
 minuteSelect.change(onToDateChanged)
-updateTheFromDate()
 
 // control button
 controlButton.click(onControlButtonClick)
@@ -47,8 +42,8 @@ controlButton.click(onControlButtonClick)
 
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: 45.465055, lng: 9.186954},
-        zoom: 13
+        center: {lat: 45.47771, lng: 9.115242},
+        zoom: 16
     })
     infoView = new google.maps.InfoWindow
 }
@@ -58,35 +53,6 @@ function onToDateChanged(event) {
     if (daySelect.val() == 1 && hourSelect.val() == 0 && minuteSelect.val() == 0) {
         minuteSelect.val(10)
     }
-
-    updateTheFromDate();
-}
-
-function updateTheFromDate() {
-
-    let minute = parseInt(minuteSelect.val()) - 10
-    var hour = parseInt(hourSelect.val())
-    var day = parseInt(daySelect.val())
-
-    if (minute < 0) {
-
-        minute = 50
-        hour -= 1
-
-        if (hour < 0) {
-
-            hour = 23
-            day -= 1
-        }
-    }
-
-    if (minute == 0) {
-        minute = '00'
-    }
-
-    fromMinuteText.text(minute)
-    fromHourText.text(hour)
-    fromDayText.text(day)
 }
 
 function incrementTheToDate() {
@@ -160,7 +126,6 @@ function startSimulation() {
 function continueSimulation() {
 
     incrementTheToDate()
-    updateTheFromDate()
     downloadData()
 }
 

@@ -1,4 +1,28 @@
 html, body, #map {
+
 	height: 100%;
 	width: 100%;
+}
+
+input {
+
+    text-align: center;
+}
+
+.overlay {
+
+    height: 100%;
+    width: 25%;
+    position: fixed;
+    z-index: 1;
+    left: 0px;
+    top: 0px;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.overlay-content {
+
+    position: relative;
+    top: 25%;
+    text-align: center;
 }
