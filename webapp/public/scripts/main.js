@@ -249,7 +249,7 @@ function parseSquaresFromGeoJson(geoJson, squareIds) {
 
         var squareCoordinates = []
 
-        for (let squareCoordinate of geoJson.features[squareId].geometry.coordinates[0]) {
+        for (let squareCoordinate of geoJson.features[parseInt(squareId) - 1].geometry.coordinates[0]) {
 
             squareCoordinates.push({lat: squareCoordinate[1], lng: squareCoordinate[0]})
         }

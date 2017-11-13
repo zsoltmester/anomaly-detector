@@ -1,0 +1,19 @@
+{% extends 'base' %}
+
+{% block title %}
+Squares
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="map"></div>
+
+{% endblock %}
+
+{% block scripts %}
+  <script src="/scripts/squares.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDoyJJuwFRdwtqcS4c7hSW7_Qijoz7SoLw&callback=initMap" async defer></script>
+{% endblock %}

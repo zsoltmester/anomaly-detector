@@ -17,7 +17,11 @@
 
 # TODO
 
-- Square kiválasztó képernyő.
+- Az algoritmusből kitörölni az optimalizációt.
+- Python code style.
+- Node JS code style?
+- Python unit tests.
+- Node JS unit tests.
 
 # Anomaly Detector
 
