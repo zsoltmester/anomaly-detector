@@ -17,8 +17,6 @@
 
 # TODO
 
-- Python code style.
-- Node JS code style?
 - Python unit tests.
 - Node JS unit tests.
 
