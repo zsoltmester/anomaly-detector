@@ -17,7 +17,6 @@
 
 # TODO
 
-- Az algoritmusből kitörölni az optimalizációt.
 - Python code style.
 - Node JS code style?
 - Python unit tests.
