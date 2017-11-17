@@ -84,12 +84,16 @@ if __name__ == '__main__':
         for category in [constant.WEEKDAYS, constant.WEEKENDS]:
             training_timestamps[category] = np.unique(training_data[category][constant.TIMESTAMPS])
 
-        # create the training_features_mean for each timestamp and group the testing data by day
+        # create the training_features_mean for each timestamp
         training_features_mean = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
-        testing_data_grouped_by_day = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
         for category in [constant.WEEKDAYS, constant.WEEKENDS]:
             training_features_mean[category] = preprocess.features_mean_for_each_timestamps(training_data[category])
+
+        # group the testing data by day
+        testing_data_grouped_by_day = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
+        for category in [constant.WEEKDAYS, constant.WEEKENDS]:
             testing_data_grouped_by_day[category] = preprocess.group_data_by_day(testing_data[category])
+
         print('Done to preprocess the datasets. Time: ', round(time() - start_time, 3), ' sec')
 
         if action == constant.ACTION_VISUALIZE:

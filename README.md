@@ -2,6 +2,8 @@
 - `python detect_anomaly.py -h`, de egy példa: `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square 1 --action visualize`
 - `npm run serve:dev` (development), `npm run serve` (production)
 - `python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --action save > log2500.txt 2>&1`
+- 5855, 5856, 5955, 5956
+
 
 # Spec
 
@@ -16,6 +18,13 @@
 	3. majd várakozunk egy kis ideig (mintha valós időben a következő adatok beérkezésére várnánk) és erről a felhasználót is tájékoztatjuk.
 
 # TODO
+
+- A szórást is kiszámolni minden időponthoz és megjeleníteni.
+- Konfigurálhatóvá tenni a szórás szorzóját.
+- A mentésnél a szórást is elmenteni.
+- A különbség helyett az átlagos és az aktuális értéket elmenteni.
+
+- Backend és kliens...
 
 - Python unit tests.
 - Node JS unit tests.
