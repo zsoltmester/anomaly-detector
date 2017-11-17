@@ -7,35 +7,36 @@ import sqlite3
 import constant
 
 
-def write_differences_to_sqlite(square, differences):
-    """Saves the given differences to an SQLite database.
+def write_square_to_database(square, standard_deviations, differences):
+    """Saves the given squares' properties to an SQLite database.
 
     Args:
-        square: The square ID of the differences, as an int.
+        square: The square ID, as an int.
+        standard_deviations: The standard deviations of the training data in form { day_number_as_int: { minutes: standard deviation, ...}, ... }.
         differences: The differences in form { day_number_as_int: { minutes: difference, ...}, ... }.
     """
-    connection = sqlite3.connect(constant.DIFFERENCES_DB)
+    connection = sqlite3.connect(constant.DATABASE_NAME)
     cursor = connection.cursor()
 
     try:
-        cursor.execute('CREATE TABLE differences (square integer, day integer, minutes integer, difference real)')
+        cursor.execute('CREATE TABLE squares (square integer, day integer, minutes integer, standard_deviations real, difference real)')
     except sqlite3.OperationalError as error:
         # Nothing to do, the table already exists
         pass
 
     for day, values in differences.items():
         for minutes, difference in values.items():
-            cursor.execute("INSERT INTO differences VALUES (" + str(square) + ", " + str(day) + ", " + str(minutes) + "," + str(difference) + ")")
+            cursor.execute("INSERT INTO squares VALUES (" + str(square) + ", " + str(day) + ", " + str(minutes) + "," + str(standard_deviations[day][minutes]) + "," + str(difference) + ")")
 
     connection.commit()
     connection.close()
 
 
-def read_differences_from_sqlite():
-    """ Reads the differences from the constant.DIFFERENCES_DB and print each row.
+def read_database():
+    """ Reads the database named constant.DATABASE_NAME and print each row.
     """
-    connection = sqlite3.connect(constant.DIFFERENCES_DB)
+    connection = sqlite3.connect(constant.DATABASE_NAME)
     cursor = connection.cursor()
-    for row in cursor.execute('SELECT * FROM differences ORDER BY square, day, minutes'):
+    for row in cursor.execute('SELECT * FROM squares ORDER BY square, day, minutes'):
         print(row)
     connection.close()

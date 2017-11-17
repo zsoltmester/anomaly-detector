@@ -100,4 +100,4 @@ MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
 """
 Database name for the save action.
 """
-DIFFERENCES_DB = 'differences.db'
+DATABASE_NAME = 'processed_data.db'

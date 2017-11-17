@@ -19,7 +19,6 @@
 
 # TODO
 
-- A mentésnél a szórást is elmenteni.
 - A különbség helyett az átlagos és az aktuális értéket elmenteni.
 
 - Backend és kliens... (Konfigurálhatóvá tenni a szórás szorzóját)

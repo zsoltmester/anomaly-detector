@@ -67,8 +67,8 @@ def cache_data(files, square, is_training):
                 elif square is not None and square_found:  # assume that that squares are grouped in a file
                     break
 
-                if square is None:
-                    continue
+                if square is None: # FIXME: and (current_square != 1):
+                    break
 
                 data_point = {
                     constant.FEATURE_TIME_INTERVAL: values[1],

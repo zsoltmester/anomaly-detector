@@ -33,22 +33,42 @@ def get_difference_for_day(testing_day_data, training_day_data, timestamps):
     return differences
 
 
-def drop_unknown_values(testing_timestamps, training_timestamps, training_features):
-    """Drops the those training features, whose timestamps are not in the the testing timestamps.
+def get_standard_deviations_for_day(training_standard_deviations, timestamps):
+    """Return the standard deviations of the training data for each timestamp.
+
+    Args:
+        training_standard_deviations: The training day's standard deviations, as a list of floats.
+        timestamps: The timestamps for a day.
+
+    Returns:
+        A dictinary, where the keys are the timestamps (as ints) and the values are the standard deviations (as floats).
+    """
+    standard_deviations = {}
+    for timestamp_index, timestamp in enumerate(timestamps):
+        standard_deviations[int(timestamp)] = training_standard_deviations[timestamp_index]
+    return standard_deviations
+
+
+def drop_unknown_values(testing_timestamps, training_timestamps, training_features, training_standard_deviations):
+    """Drops the those training features and standard deviations, whose timestamps are not in the the testing timestamps.
 
     Args:
         testing_timestamps: The testing day's timestamps, as a list of ints.
         training_timestamps: The training day's timestamps, as a list of ints.
         training_features: The training day's features, as a list of floats.
+        training_standard_deviations: The training day's standard deviations, as a list of floats.
 
     Returns:
-        The filtered training features as a new array of floats.
+        1. The filtered training features as a new array of floats.
+        2. The filtered standard deviations as a new array of floats.
     """
     filtered_training_features = []
+    filtered_training_standard_deviations = []
     for testing_timestamp in testing_timestamps:
         testing_timestamp_index_in_training_timestamps = np.where(training_timestamps == testing_timestamp)[0]
         filtered_training_features.append(training_features[testing_timestamp_index_in_training_timestamps][0])
-    return filtered_training_features
+        filtered_training_standard_deviations.append(training_standard_deviations[testing_timestamp_index_in_training_timestamps][0])
+    return filtered_training_features, filtered_training_standard_deviations
 
 
 if __name__ == '__main__':
@@ -118,27 +138,32 @@ if __name__ == '__main__':
             print('Display the polinomials...')
             for category in [constant.WEEKDAYS, constant.WEEKENDS]:
                 for index, interpolation_polynomial in enumerate(testing_interpolation_polynomials[category]):
-                    filtered_training_features = drop_unknown_values(testing_data_grouped_by_day[category][index][constant.TIMESTAMPS], training_timestamps[category], training_features_mean[category])
+                    filtered_training_features, filtered_training_standard_deviations = drop_unknown_values(testing_data_grouped_by_day[category][index][constant.TIMESTAMPS], training_timestamps[category], training_features_mean[category], training_features_standard_deviation[category])
 
                     differences = get_difference_for_day(testing_data_grouped_by_day[category][index][constant.FEATURES], filtered_training_features, testing_data_grouped_by_day[category][index][constant.TIMESTAMPS])
                     print('Differences in day', testing_data_grouped_by_day[category][index], ':', differences)
 
+                    standard_deviations = get_standard_deviations_for_day(filtered_training_standard_deviations, testing_data_grouped_by_day[category][index][constant.TIMESTAMPS])
+                    print('Standard deviations in day', testing_data_grouped_by_day[category][index], ':', standard_deviations)
+
                     display.display_polinomials(training_data[category], filtered_training_features, np.add(filtered_training_features, training_features_standard_deviation[category]), np.subtract(filtered_training_features, training_features_standard_deviation[category]), training_interpolation_polynomial[category], testing_data_grouped_by_day[category][index], interpolation_polynomial)
         else:
-            print('Calulate the difference for each timestamp in each testing day...')
+            print('Collect the results for each timestamp in each testing day...')
             start_time = time()
             differences = {}
+            standard_deviations = {}
             for category in [constant.WEEKDAYS, constant.WEEKENDS]:
                 for testing_day_data in testing_data_grouped_by_day[category]:
-                    filtered_training_features = drop_unknown_values(testing_day_data[constant.TIMESTAMPS], training_timestamps[category], training_features_mean[category])
+                    filtered_training_features, filtered_training_standard_deviations = drop_unknown_values(testing_day_data[constant.TIMESTAMPS], training_timestamps[category], training_features_mean[category], training_features_standard_deviation[category])
                     differences_for_current_day = get_difference_for_day(testing_day_data[constant.FEATURES], filtered_training_features, testing_day_data[constant.TIMESTAMPS])
                     differences[testing_day_data[constant.DAY]] = differences_for_current_day
-            print('Done to calculate the differences. Time: ', round(time() - start_time, 3), ' sec')
+                    standard_deviations[testing_day_data[constant.DAY]] = get_standard_deviations_for_day(filtered_training_standard_deviations, testing_day_data[constant.TIMESTAMPS])
+            print('Done to collect the results. Time: ', round(time() - start_time, 3), ' sec')
 
-            print('Save the differences to the database...')
+            print('Save the results to the database...')
             start_time = time()
-            save.write_differences_to_sqlite(square, differences)
-            # save.read_differences_from_sqlite()  # for testing purpose
-            print('Done to save the differences to the database. Time: ', round(time() - start_time, 3), ' sec')
+            save.write_square_to_database(square, standard_deviations, differences)
+            # save.read_database()  # for testing purpose
+            print('Done to save the results to the database. Time: ', round(time() - start_time, 3), ' sec')
 
     print('The algorithm finished. Time: ', round(time() - algorithm_start_time, 3), ' sec')
