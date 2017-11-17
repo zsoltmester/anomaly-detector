@@ -89,6 +89,11 @@ if __name__ == '__main__':
         for category in [constant.WEEKDAYS, constant.WEEKENDS]:
             training_features_mean[category] = preprocess.features_mean_for_each_timestamps(training_data[category])
 
+        # create the training_features_standard_deviation for each timestamp
+        training_features_standard_deviation = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
+        for category in [constant.WEEKDAYS, constant.WEEKENDS]:
+            training_features_standard_deviation[category] = preprocess.features_standard_deviation_for_each_timestamps(training_data[category])
+
         # group the testing data by day
         testing_data_grouped_by_day = {constant.WEEKDAYS: None, constant.WEEKENDS: None}
         for category in [constant.WEEKDAYS, constant.WEEKENDS]:
@@ -118,7 +123,7 @@ if __name__ == '__main__':
                     differences = get_difference_for_day(testing_data_grouped_by_day[category][index][constant.FEATURES], filtered_training_features, testing_data_grouped_by_day[category][index][constant.TIMESTAMPS])
                     print('Differences in day', testing_data_grouped_by_day[category][index], ':', differences)
 
-                    display.display_polinomials(training_data[category], filtered_training_features, training_interpolation_polynomial[category], testing_data_grouped_by_day[category][index], interpolation_polynomial)
+                    display.display_polinomials(training_data[category], filtered_training_features, np.add(filtered_training_features, training_features_standard_deviation[category]), np.subtract(filtered_training_features, training_features_standard_deviation[category]), training_interpolation_polynomial[category], testing_data_grouped_by_day[category][index], interpolation_polynomial)
         else:
             print('Calulate the difference for each timestamp in each testing day...')
             start_time = time()

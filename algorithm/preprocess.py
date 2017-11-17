@@ -316,7 +316,7 @@ def drop_outliers(vector):
 
 
 def features_mean_for_each_timestamps(data):
-    """Calculates the mean of each feature for each timestamp.
+    """Calculates the features' mean for each timestamp.
 
     Also drops the outliers with the drop_outliers_from_vector function.
 
@@ -324,7 +324,7 @@ def features_mean_for_each_timestamps(data):
         data: A dictionary with the following form: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }.
 
     Returns:
-        The data with the the new mean feature matrix instead of the given.
+        An array with the features' mean for each timestamp in order.
     """
     features_mean = np.array([])
     current_timestamp = data[constant.TIMESTAMPS][0]
@@ -340,6 +340,30 @@ def features_mean_for_each_timestamps(data):
                 current_timestamp = data[constant.TIMESTAMPS][index + 1]
                 current_values = np.array([])
     return features_mean
+
+
+def features_standard_deviation_for_each_timestamps(data):
+    """Calculates the features' standard deviation for each timestamp.
+
+    Args:
+        data: A dictionary with the following form: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }.
+
+    Returns:
+        An array with the features' standard deviation for each timestamp in order.
+    """
+    features_standard_deviation = np.array([])
+    current_timestamp = data[constant.TIMESTAMPS][0]
+    current_values = np.array([])
+    for index in range(0, len(data[constant.TIMESTAMPS])):
+        current_values = np.append(current_values, data[constant.FEATURES][index])
+        if index == len(data[constant.TIMESTAMPS]) - 1 or current_timestamp < data[constant.TIMESTAMPS][index + 1]:
+            # add the standard deviation for this timestamp
+            features_standard_deviation = np.append(features_standard_deviation, np.std(current_values))
+            # prepare for the next iteration
+            if index != len(data[constant.TIMESTAMPS]) - 1:
+                current_timestamp = data[constant.TIMESTAMPS][index + 1]
+                current_values = np.array([])
+    return features_standard_deviation
 
 
 def group_data_by_day(data):

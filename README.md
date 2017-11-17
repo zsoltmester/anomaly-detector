@@ -19,12 +19,10 @@
 
 # TODO
 
-- A szórást is kiszámolni minden időponthoz és megjeleníteni.
-- Konfigurálhatóvá tenni a szórás szorzóját.
 - A mentésnél a szórást is elmenteni.
 - A különbség helyett az átlagos és az aktuális értéket elmenteni.
 
-- Backend és kliens...
+- Backend és kliens... (Konfigurálhatóvá tenni a szórás szorzóját)
 
 - Python unit tests.
 - Node JS unit tests.
