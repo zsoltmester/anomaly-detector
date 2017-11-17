@@ -19,8 +19,6 @@
 
 # TODO
 
-- Konfigurálhatóvá tenni mentésnél az elmentendő square intervallumot.
-
 - Backend és kliens... (Konfigurálhatóvá tenni a szórás szorzóját)
 
 - Python unit tests.

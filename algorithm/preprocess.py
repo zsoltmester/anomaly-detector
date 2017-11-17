@@ -33,15 +33,15 @@ A constant that controls how many outliers we will drop.
 _OUTLIER_CONTROL = 1.75
 
 
-def cache_data(files, square, is_training):
-    """Reades the given files and cache them into memory. If a square is not None, it will cache only that square.
+def cache_data(files, squares, is_training):
+    """Reades the given files and cache them into memory. It will cache the given squares.
 
-    It caches them into the _TRAINING_DATA_CACHE or the _TESTING_DATA_CACHE, based on the second parameter.
+    It caches them into the _TRAINING_DATA_CACHE or the _TESTING_DATA_CACHE, based on the is_training parameter.
 
     Args:
         files: Paths to the files. It must be an iterable on strings.
-        square: Optional. The square to read. It must be an int or string. If this is not None, it will cache only this square.
-        is_training: Indicates if it's a training dataset or not.
+        squares: The squares to cache. It must be a list of integers.
+        is_training: Indicates if it should cache the training dataset or not.
     """
     print('Caching the files...')
     start_time = time()
@@ -57,18 +57,20 @@ def cache_data(files, square, is_training):
             continue
         with open(file) as tsv_file:
             print('Reading', file, '...')
-            square_found = False
+            squares_found = 0
+            last_found_square = None
             for line in tsv_file:
                 values = line.split('\t')
 
                 current_square = int(values[0])
-                if square is not None and int(square) == current_square:
-                    square_found = True
-                elif square is not None and square_found:  # assume that that squares are grouped in a file
+                if current_square in squares:
+                    if current_square != last_found_square:
+                        squares_found += 1
+                        last_found_square = current_square
+                elif squares_found == len(squares):
                     break
-
-                if square is None: # and (current_square != 1):
-                    break
+                else:
+                    continue
 
                 data_point = {
                     constant.FEATURE_TIME_INTERVAL: values[1],

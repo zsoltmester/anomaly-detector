@@ -59,11 +59,11 @@ if __name__ == '__main__':
     start_time = time()
     action, training_files, testing_files, squares, features = initialise.initialise()
     if action == constant.ACTION_SAVE:
-        preprocess.cache_data(training_files, None, is_training=True)
-        preprocess.cache_data(testing_files, None, is_training=False)
+        preprocess.cache_data(training_files, squares, is_training=True)
+        preprocess.cache_data(testing_files, squares, is_training=False)
     else:
-        preprocess.cache_data(training_files, squares[0], is_training=True)
-        preprocess.cache_data(testing_files, squares[0], is_training=False)
+        preprocess.cache_data(training_files, squares, is_training=True)
+        preprocess.cache_data(testing_files, squares, is_training=False)
     print('Done to initialze the algorithm. Time: ', round(time() - start_time, 3), ' sec')
 
     for square in squares:
