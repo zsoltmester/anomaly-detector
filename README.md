@@ -19,7 +19,7 @@
 
 # TODO
 
-- A különbség helyett az átlagos és az aktuális értéket elmenteni.
+- Konfigurálhatóvá tenni mentésnél az elmentendő square intervallumot.
 
 - Backend és kliens... (Konfigurálhatóvá tenni a szórás szorzóját)
 

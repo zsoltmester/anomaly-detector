@@ -14,25 +14,6 @@ import preprocess
 import save
 
 
-def get_difference_for_day(testing_day_data, training_day_data, timestamps):
-    """Return the difference between the given testing and training day for each timestamp.
-
-    Args:
-        testing_day_data: The testing day's features, as a list of floats.
-        training_day_data: The training day's features, as a list of floats.
-        timestamps: The timestamps for a day.
-
-    Returns:
-        A dictinary, where the keys are the timestamps (as ints) and the values are the differences (as floats).
-    """
-    differences = {}
-    for timestamp_index, timestamp in enumerate(timestamps):
-        difference = testing_day_data[timestamp_index] - training_day_data[timestamp_index]
-        difference = math.fabs(difference)
-        differences[int(timestamp)] = difference
-    return differences
-
-
 def get_standard_deviations_for_day(training_standard_deviations, timestamps):
     """Return the standard deviations of the training data for each timestamp.
 
@@ -140,29 +121,42 @@ if __name__ == '__main__':
                 for index, interpolation_polynomial in enumerate(testing_interpolation_polynomials[category]):
                     filtered_training_features, filtered_training_standard_deviations = drop_unknown_values(testing_data_grouped_by_day[category][index][constant.TIMESTAMPS], training_timestamps[category], training_features_mean[category], training_features_standard_deviation[category])
 
-                    differences = get_difference_for_day(testing_data_grouped_by_day[category][index][constant.FEATURES], filtered_training_features, testing_data_grouped_by_day[category][index][constant.TIMESTAMPS])
-                    print('Differences in day', testing_data_grouped_by_day[category][index], ':', differences)
-
                     standard_deviations = get_standard_deviations_for_day(filtered_training_standard_deviations, testing_data_grouped_by_day[category][index][constant.TIMESTAMPS])
                     print('Standard deviations in day', testing_data_grouped_by_day[category][index], ':', standard_deviations)
 
                     display.display_polinomials(training_data[category], filtered_training_features, np.add(filtered_training_features, training_features_standard_deviation[category]), np.subtract(filtered_training_features, training_features_standard_deviation[category]), training_interpolation_polynomial[category], testing_data_grouped_by_day[category][index], interpolation_polynomial)
         else:
+
             print('Collect the results for each timestamp in each testing day...')
+
             start_time = time()
-            differences = {}
+
+            mean_activities = {}
+            actual_activities = {}
             standard_deviations = {}
+
             for category in [constant.WEEKDAYS, constant.WEEKENDS]:
                 for testing_day_data in testing_data_grouped_by_day[category]:
+
                     filtered_training_features, filtered_training_standard_deviations = drop_unknown_values(testing_day_data[constant.TIMESTAMPS], training_timestamps[category], training_features_mean[category], training_features_standard_deviation[category])
-                    differences_for_current_day = get_difference_for_day(testing_day_data[constant.FEATURES], filtered_training_features, testing_day_data[constant.TIMESTAMPS])
-                    differences[testing_day_data[constant.DAY]] = differences_for_current_day
-                    standard_deviations[testing_day_data[constant.DAY]] = get_standard_deviations_for_day(filtered_training_standard_deviations, testing_day_data[constant.TIMESTAMPS])
+
+                    current_mean_activities = {}
+                    current_actual_activities = {}
+                    current_standard_deviations = {}
+                    for timestamp_index, timestamp in enumerate(testing_day_data[constant.TIMESTAMPS]):
+                        current_mean_activities[int(timestamp)] = filtered_training_features[timestamp_index]
+                        current_actual_activities[int(timestamp)] = testing_day_data[constant.FEATURES][timestamp_index]
+                        current_standard_deviations[int(timestamp)] = filtered_training_standard_deviations[timestamp_index]
+
+                    mean_activities[testing_day_data[constant.DAY]] = current_mean_activities
+                    actual_activities[testing_day_data[constant.DAY]] = current_actual_activities
+                    standard_deviations[testing_day_data[constant.DAY]] = current_standard_deviations
+
             print('Done to collect the results. Time: ', round(time() - start_time, 3), ' sec')
 
             print('Save the results to the database...')
             start_time = time()
-            save.write_square_to_database(square, standard_deviations, differences)
+            save.write_square_to_database(square, mean_activities, actual_activities, standard_deviations)
             # save.read_database()  # for testing purpose
             print('Done to save the results to the database. Time: ', round(time() - start_time, 3), ' sec')
 
