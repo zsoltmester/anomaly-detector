@@ -1,21 +1,8 @@
 - Az **erdos.inf.elte.hu**-t használhatom tesztelésre.
-- `python detect_anomaly.py -h`, de egy példa: `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square 1 --action visualize`
+- `python detect_anomaly.py -h`, de egy példa: `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square_from 1 --square_to 2 --action visualize`
+- `python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --square_from 1 --square_to 2 --action save > log1000.txt 2>&1`
 - `npm run serve:dev` (development), `npm run serve` (production)
-- `python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --action save > log2500.txt 2>&1`
 - 5855, 5856, 5955, 5956
-
-
-# Spec
-
-- Egyetlen oldalból áll a webapp.
-- Az algoritmusban található az anomália detektáló logika. Ez egy python program. Képes egyidejűleg több szálon vagy folyamaton futtatni az adatfeldolgozást.
-- A webapp backend része az algoritmus futtatásáért és az eredményének feldolgozásáért felel.
-- A webapp frontend része az algoritmus eredményeinek megjelenítéséért felel.
-- A szimuláció inicializálásához ki kell választani a négyzeteket és a kezdődátumot. Van lehetőség elindítani (start), és megállítani (stop) a szimulációt.
-- A szimuláció futását körökre lehet osztani. Minden körben
-	1. lekérjük a backendtől az adatokat a kiválasztott négyzetekre és az aktuális dátumra (közben jelezzük a felhasználónak, hogy tart az adatfeldolgozás),
-	2. megjelenítjük az adatokat,
-	3. majd várakozunk egy kis ideig (mintha valós időben a következő adatok beérkezésére várnánk) és erről a felhasználót is tájékoztatjuk.
 
 # TODO
 

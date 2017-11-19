@@ -13,16 +13,6 @@ import common_function
 import constant
 
 """
-In memory cache for the training files. The keys are the squares (as ints) and the values are the features with values, as dictionaries.
-"""
-_TRAINING_DATA_CACHE = {}
-
-"""
-In memory cache for the testing files. The keys are the squares (as ints) and the values are the features with values, as dictionaries.
-"""
-_TESTING_DATA_CACHE = {}
-
-"""
 The scaler for the feature scaling.
 """
 _SCALER = None
@@ -33,33 +23,35 @@ A constant that controls how many outliers we will drop.
 _OUTLIER_CONTROL = 1.75
 
 
-def cache_data(files, squares, is_training):
-    """Reades the given files and cache them into memory. It will cache the given squares.
-
-    It caches them into the _TRAINING_DATA_CACHE or the _TESTING_DATA_CACHE, based on the is_training parameter.
+def load_squares(files, squares):
+    """Returns the given squares from the given files.
 
     Args:
         files: Paths to the files. It must be an iterable on strings.
-        squares: The squares to cache. It must be a list of integers.
-        is_training: Indicates if it should cache the training dataset or not.
+        squares: The squares to load. It must be a list of integers.
+
+    Returns:
+        A dictionary, where the keys are the squares (as ints) and the values are the features with values, as dictionaries.
     """
-    print('Caching the files...')
+    print('Loading the squares...')
     start_time = time()
-    if is_training:
-        global _TRAINING_DATA_CACHE
-        data_cache = _TRAINING_DATA_CACHE
-    else:
-        global _TESTING_DATA_CACHE
-        data_cache = _TESTING_DATA_CACHE
+
+    data = {}
 
     for file in files:
+
         if 'sms-call-internet-mi-2014-01-01.txt' in file:  # if this inconsitency exists on the dataset, skip this file
             continue
+
         with open(file) as tsv_file:
+
             print('Reading', file, '...')
+
             squares_found = 0
             last_found_square = None
+
             for line in tsv_file:
+
                 values = line.split('\t')
 
                 current_square = int(values[0])
@@ -81,49 +73,59 @@ def cache_data(files, squares, is_training):
                     constant.FEATURE_INTERNET: values[7]
                 }
 
-                if current_square not in data_cache:
-                    data_cache[current_square] = []
-                data_cache[current_square].append(data_point)
+                if current_square not in data:
+                    data[current_square] = []
+                data[current_square].append(data_point)
 
-    print('Done to caching the files. Time: ', round(time() - start_time, 3), ' sec')
-
-
-def read_data_from_cache(square, is_training):
-    """Reades all the data from cache for the specified square.
-
-    Args:
-        square: The square to read. It must be an int or string.
-        is_training: Indicates if it's a training dataset or not.
-
-    Returns:
-        The list of the read rows, where each item is a dictinary, where the keys are the constant.FEATURE_* global constants.
-    """
-    if is_training:
-        global _TRAINING_DATA_CACHE
-        data_cache = _TRAINING_DATA_CACHE
-    else:
-        global _TESTING_DATA_CACHE
-        data_cache = _TESTING_DATA_CACHE
-
-    return data_cache[int(square)]
+    print('Done to loading the squares. Time: ', round(time() - start_time, 3), ' sec')
+    return data
 
 
-def get_value_from_row(row, value_id):
-    """Returns the values for the given ID from the given row.
+def preprocess_square(square_data, features, convert_timestamps):
+    """Preprocess the given square using the given features.
 
-    If the value is missing from the row, it returns 0.
+    1. Group by time interval.
+    2. Split to timestamps and features.
+    3. Split to weekdays and weekends.
+    4. Scale the features.
+    5. Calculates features mean value.
+    6. Removes the unknown data points.
+    7. Convert timestamps to the passed minutes each day, if the given parameter is true.
+    8. Sort the arrays based on the timestamps.
 
     Args:
-        row: The row as a dictionary of the features.
-        value_id: The ID of the value to get as a string.
+        square_data: The square data to preprocess. A dictionary, where the values are the constant.FEATURE_* global constants.
+        features: Which features to use. The valid values are the constant.FEATURE_* global constants.
+        covert_timestamps: Should convert the timestamps to the passed minutes on day or not.
 
     Returns:
-        The value for the given ID as a float.
+        The processed dataset as a dictionary, with the following schema:
+        {
+            constant.WEEKDAYS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] },
+            constant.WEEKENDS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }
+        }
     """
-    try:
-        return float(row[value_id])
-    except ValueError:
-        return 0.
+    grouped_square_data = group_data_by_time_interval(square_data, features)
+    timestamps, features = split_data_for_timestamps_and_features(grouped_square_data)
+    categories = split_data_for_weekdays_and_weekends(timestamps, features)
+
+    for category_id in [constant.WEEKDAYS, constant.WEEKENDS]:
+        category = categories[category_id]
+
+        category[constant.FEATURES] = scale_features(category[constant.FEATURES])
+        category[constant.FEATURES] = translate_matrix_to_mean_vector(category[constant.FEATURES])
+
+        category[constant.TIMESTAMPS], category[constant.FEATURES] = remove_invalid_values(category[constant.TIMESTAMPS], category[constant.FEATURES])
+
+        if convert_timestamps:
+            minutes_passed_on_day = np.array([])
+            for timestamp in category[constant.TIMESTAMPS]:
+                minutes_passed_on_day = np.append(minutes_passed_on_day, common_function.passed_minutes_on_day(timestamp))
+            category[constant.TIMESTAMPS] = minutes_passed_on_day
+
+        category[constant.TIMESTAMPS], category[constant.FEATURES] = common_function.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
+
+    return categories
 
 
 def group_data_by_time_interval(data, features):
@@ -150,6 +152,24 @@ def group_data_by_time_interval(data, features):
                 if prop in features:
                     grouped_data[time_interval][prop] = get_value_from_row(row, prop)
     return grouped_data
+
+
+def get_value_from_row(row, value_id):
+    """Returns the value for the given ID from the given row as a float.
+
+    If the value is missing from the row, it returns 0.
+
+    Args:
+        row: The row as a dictionary of the features.
+        value_id: The ID of the value to get as a string.
+
+    Returns:
+        The value for the given ID as a float.
+    """
+    try:
+        return float(row[value_id])
+    except ValueError:
+        return 0.
 
 
 def split_data_for_timestamps_and_features(data):
@@ -182,23 +202,27 @@ def split_data_for_weekdays_and_weekends(timestamps, features):
         features: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature.
 
     Returns:
-        A tuple, where the first element corresponds for the weekdays and the second for the weekends. Each element is a list, with the following items.
-        - 1.: The timestamps as a numpy array of strings. (as given)
-        - 2.: The features as a numpy array of numpy arrays (a matrix), where each column represents a feature. (as given)
+        The splitted dataset as a dictionary, with the following schema:
+        {
+            constant.WEEKDAYS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] },
+            constant.WEEKENDS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }
+        }
     """
     weekday_timestamps = np.array([])
     weekend_timestamps = np.array([])
     weekday_features = None
     weekend_features = None
-    for index, timestamp in enumerate(timestamps):
+    for timestamp_index, timestamp in enumerate(timestamps):
         date = datetime.fromtimestamp(float(timestamp) / 1000.)
         if date.weekday() < 5:
             weekday_timestamps = np.append(weekday_timestamps, timestamp)
-            weekday_features = common_function.add_row_to_matrix(weekday_features, features[index])
+            weekday_features = common_function.add_row_to_matrix(weekday_features, features[timestamp_index])
         else:
             weekend_timestamps = np.append(weekend_timestamps, timestamp)
-            weekend_features = common_function.add_row_to_matrix(weekend_features, features[index])
-    return {constant.TIMESTAMPS: weekday_timestamps, constant.FEATURES: weekday_features}, {constant.TIMESTAMPS: weekend_timestamps, constant.FEATURES: weekend_features}
+            weekend_features = common_function.add_row_to_matrix(weekend_features, features[timestamp_index])
+    return {
+        constant.WEEKDAYS: {constant.TIMESTAMPS: weekday_timestamps, constant.FEATURES: weekday_features}, constant.WEEKENDS: {constant.TIMESTAMPS: weekend_timestamps, constant.FEATURES: weekend_features}
+    }
 
 
 def scale_features(features):
@@ -257,47 +281,6 @@ def remove_invalid_values(timestamps, features):
     timestamps = np.delete(timestamps, invalid_data_points)
     features = np.delete(features, invalid_data_points)
     return timestamps, features
-
-
-def preprocess_dataset(square, features, is_training):
-    """Preprocess the given dataset.
-
-    1. Reads the data from cache.
-    2. Group by time interval.
-    3. Split to timestamps and features.
-    4. Split to weekdays and weekends.
-    5. Scale.
-    6. Select and convert the specified features.
-    7. Removes the invalid data points.
-    8. If it's a training dataset, convert timestamps to the passed minutes each day.
-    9. Sort the arrays based on the timestamps.
-
-    Args:
-        square: The square to read.
-        features: Which features to keep. The valid values are the constant.FEATURE_* global constants.
-        is_training: Indicates if it's a training dataset or not.
-
-    Returns:
-        The processed dataset as a dictionary, with the following schema:
-        {
-            constant.WEEKDAYS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] },
-            constant.WEEKENDS: { constant.TIMESTAMPS: [ ... ], constant.FEATURES: [ ... ] }
-        }
-    """
-    data = read_data_from_cache(square, is_training)
-    data = group_data_by_time_interval(data, features)
-    timestamps, features = split_data_for_timestamps_and_features(data)
-    weekdays, weekends = split_data_for_weekdays_and_weekends(timestamps, features)
-    categories = {constant.WEEKDAYS: weekdays, constant.WEEKENDS: weekends}
-    for category_id in [constant.WEEKDAYS, constant.WEEKENDS]:
-        category = categories[category_id]
-        category[constant.FEATURES] = scale_features(category[constant.FEATURES])
-        category[constant.FEATURES] = translate_matrix_to_mean_vector(category[constant.FEATURES])
-        category[constant.TIMESTAMPS], category[constant.FEATURES] = remove_invalid_values(category[constant.TIMESTAMPS], category[constant.FEATURES])
-        if is_training:
-            category[constant.TIMESTAMPS] = common_function.get_minutes(category[constant.TIMESTAMPS])
-        category[constant.TIMESTAMPS], category[constant.FEATURES] = common_function.sort_arrays_based_on_the_first(category[constant.TIMESTAMPS], category[constant.FEATURES])
-    return categories
 
 
 def drop_outliers(vector):
@@ -386,7 +369,7 @@ def group_data_by_day(data):
     for index, timestamp in enumerate(data[constant.TIMESTAMPS]):
         if index != len(data[constant.TIMESTAMPS]) - 1:
             next_day = common_function.date_from_timestamp(data[constant.TIMESTAMPS][index + 1]).day
-        current_timestamps = np.append(current_timestamps, common_function.get_minute(timestamp))
+        current_timestamps = np.append(current_timestamps, common_function.passed_minutes_on_day(timestamp))
         current_features = np.append(current_features, data[constant.FEATURES][index])
         if index == len(data[constant.TIMESTAMPS]) - 1 or current_day < next_day:
             # add the current day's data

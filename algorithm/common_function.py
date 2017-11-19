@@ -25,7 +25,7 @@ def collect_files_in_dir(directory):
     return files
 
 
-def get_minute(timestamp):
+def passed_minutes_on_day(timestamp):
     """Calculates how many minutes passed on that day.
 
     Args:
@@ -37,22 +37,6 @@ def get_minute(timestamp):
     date = date_from_timestamp(timestamp)
     minutes_passed = constant.MINUTES_PER_HOUR * date.hour + date.minute
     return minutes_passed
-
-
-def get_minutes(timestamps):
-    """Calculates how many minutes passed on that days.
-
-    Args:
-        timestamps: Array of strings.
-
-    Returns:
-        The number of minutes that passed on that days.
-    """
-    minutes = np.array([])
-    for timestamp in timestamps:
-        minutes_passed = get_minute(timestamp)
-        minutes = np.append(minutes, minutes_passed)
-    return minutes
 
 
 def sort_arrays_based_on_the_first(first_array, second_array):
@@ -97,5 +81,4 @@ def date_from_timestamp(timestamp):
     Return:
         The date object.
     """
-    date = datetime.fromtimestamp(float(timestamp) / 1000.0)
-    return date
+    return datetime.fromtimestamp(float(timestamp) / 1000.0)
