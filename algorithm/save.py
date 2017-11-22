@@ -20,7 +20,7 @@ def write_square_to_database(square, mean_activities, actual_activities, standar
     cursor = connection.cursor()
 
     try:
-        cursor.execute('CREATE TABLE squares (square integer, day integer, minutes integer, mean_activity real, actual_activity real, standard_deviations real)')
+        cursor.execute('CREATE TABLE squares (square integer, day integer, minutes integer, mean_activity real, actual_activity real, standard_deviation real)')
     except sqlite3.OperationalError as error:
         # Nothing to do, the table already exists
         pass
