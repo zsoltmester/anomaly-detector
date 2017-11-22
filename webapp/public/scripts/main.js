@@ -186,6 +186,7 @@ function downloadData() {
 
                         if (square.id == parseInt(squareData.square)) {
 
+                            square.data = squareData
                             square.anomaly = Math.abs(squareData.mean_activity - squareData.actual_activity)
                         }
                     }
@@ -254,7 +255,7 @@ function parseSquaresFromGeoJson(geoJson, squareIds) {
             squareCoordinates.push({lat: squareCoordinate[1], lng: squareCoordinate[0]})
         }
 
-        squares.push({id: squareId, coordinates: squareCoordinates, anomaly: INVALID_ANOMALY_VALUE})
+        squares.push({id: squareId, coordinates: squareCoordinates, anomaly: INVALID_ANOMALY_VALUE, data: null})
     }
 }
 
@@ -333,8 +334,17 @@ function parseSquareIdsFromAreaInput() {
 
 function onSquareViewClick(event, square) {
 
-    infoView.setContent((square.anomaly == INVALID_ANOMALY_VALUE ? 'No data available' : '<p>Difference from normal behaviour</p>' + String(square.anomaly)))
-    infoView.setPosition(event.latLng)
+    var infoText = '<p>Square: ' + String(square.id) + '</p>'
+    if (square.anomaly == INVALID_ANOMALY_VALUE) {
+        infoText += '<p>No data available yet.</p>'
+    } else {
+        infoText += '<p>Actual activity: ' + String(square.data.actual_activity) + '</p>'
+        infoText += '<p>Mean activity in November: ' + String(square.data.mean_activity) + '</p>'
+        infoText += '<p>Activity standard deviation in November: ' + String(square.data.standard_deviations) + '</p>'
+        infoText += '<p>Anomaly probability: ' + String(square.anomaly) + '</p>'
+    }
 
+    infoView.setContent(infoText)
+    infoView.setPosition(event.latLng)
     infoView.open(map)
 }

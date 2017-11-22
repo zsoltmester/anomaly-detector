@@ -6,7 +6,6 @@
 
 # TODO
 
-- Info windowba megjeleníteni mindent, amit csak tudunk a squareről.
 - Megjeleníteni egy skálát a bal oldalon és ennek megfelelően a színeket a térképen. A differencet szórás szerint számoljuk.
 - Egy új page, ahol a grafikonok jeleníthetők meg.
 - A square pagen ki is válaszhatóak legyenek a squareek.

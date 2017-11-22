@@ -136,7 +136,7 @@ if __name__ == '__main__':
             start_time = time()
 
             save.write_square_to_database(square, mean_activities, actual_activities, standard_deviations)
-            save.read_database()  # for testing purpose
+            # save.read_database()  # for testing purpose
 
             print('Done to save the results to the database. Time: ', round(time() - start_time, 3), ' sec')
 
