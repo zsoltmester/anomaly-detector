@@ -30,7 +30,7 @@ module.exports = {
   sqlite: {
     client: 'sqlite3',
     connection: {
-      filename: Helpers.databasePath('differences.sqlite')
+      filename: Helpers.databasePath('processed_data.sqlite')
     },
     useNullAsDefault: true
   },

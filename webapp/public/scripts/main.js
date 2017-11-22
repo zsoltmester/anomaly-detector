@@ -180,13 +180,13 @@ function downloadData() {
                     return
                 }
 
-                for (squareDifference of response) {
+                for (squareData of response) {
 
                     for (square of squares) {
 
-                        if (square.id == parseInt(squareDifference.square)) {
+                        if (square.id == parseInt(squareData.square)) {
 
-                            square.anomaly = squareDifference.difference
+                            square.anomaly = Math.abs(squareData.mean_activity - squareData.actual_activity)
                         }
                     }
                 }

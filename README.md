@@ -6,7 +6,7 @@
 
 # TODO
 
-- Backend és kliens... (Konfigurálhatóvá tenni a szórás szorzóját)
+- Backend és kliens...
 
 - Python unit tests.
 - Node JS unit tests.

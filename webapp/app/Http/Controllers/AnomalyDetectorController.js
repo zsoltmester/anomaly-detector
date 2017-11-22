@@ -14,14 +14,14 @@ class AnomalyDetectorController {
 
 		var minutes = parseInt(hour) * 60 + parseInt(minute)
 
-		const differences = yield Database
-			.select('square', 'difference')
-			.from('differences')
+		const square_data = yield Database
+			.select('square', 'mean_activity', 'actual_activity', 'standard_deviations')
+			.from('squares')
 			.whereIn('square', squares)
 			.where('day', day)
 			.where('minutes', minutes)
 
-		response.send(differences)
+		response.send(square_data)
 	}
 }
 

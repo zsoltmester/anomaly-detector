@@ -5,4 +5,4 @@ npm-debug.log
 /.env
 /node_modules
 /storage
-/database/differences.sqlite
+/database/processed_data.sqlite
