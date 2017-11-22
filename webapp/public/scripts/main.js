@@ -4,8 +4,6 @@
 // **********
 //
 
-let INVALID_ANOMALY_VALUE = -1
-
 var map
 let areaInput = $('#areaInput')
 var squares
@@ -143,7 +141,8 @@ function downloadData() {
 
     for (square of squares) {
 
-        square.anomaly = INVALID_ANOMALY_VALUE
+        square.data = null
+        square.anomaly_probability = null
     }
 
     updateSquareViews()
@@ -187,7 +186,7 @@ function downloadData() {
                         if (square.id == parseInt(squareData.square)) {
 
                             square.data = squareData
-                            square.anomaly = Math.abs(squareData.mean_activity - squareData.actual_activity)
+                            square.anomaly_probability = calculateAnomalyProbability(squareData)
                         }
                     }
                 }
@@ -210,6 +209,21 @@ function downloadData() {
             })
 
     }.bind(this))
+}
+
+function calculateAnomalyProbability(squareData) {
+
+    let difference = Math.abs(squareData.mean_activity - squareData.actual_activity)
+
+    if (difference > 3 * squareData.standard_deviations) {
+        return 1
+    } else if (difference > 2 * squareData.standard_deviations) {
+        return 0.75
+    } else if (difference > squareData.standard_deviations) {
+        return 0.5
+    } else {
+        return 0
+    }
 }
 
 function waitForNextRound() {
@@ -255,7 +269,7 @@ function parseSquaresFromGeoJson(geoJson, squareIds) {
             squareCoordinates.push({lat: squareCoordinate[1], lng: squareCoordinate[0]})
         }
 
-        squares.push({id: squareId, coordinates: squareCoordinates, anomaly: INVALID_ANOMALY_VALUE, data: null})
+        squares.push({id: squareId, coordinates: squareCoordinates, anomaly_probability: null, data: null})
     }
 }
 
@@ -275,11 +289,11 @@ function createSquareViewsFromSquares() {
 
         let squareView = new google.maps.Polygon({
           paths: square.coordinates,
-          strokeColor: square.anomaly == INVALID_ANOMALY_VALUE ? '#FFFFFF' : '#FF0000',
+          strokeColor: square.anomaly_probability ? '#FF0000' : '#FFFFFF',
           strokeOpacity: 0.75,
           strokeWeight: 2,
-          fillColor: square.anomaly == INVALID_ANOMALY_VALUE ? '#FFFFFF' : '#FF0000',
-          fillOpacity: square.anomaly == INVALID_ANOMALY_VALUE ? 0.5 : (square.anomaly > 1 ? 1 : square.anomaly)
+          fillColor: square.anomaly_probability ? '#FF0000' : '#FFFFFF',
+          fillOpacity: square.anomaly_probability ? square.anomaly_probability : 0.5
         })
 
         let clickedSquare = square
@@ -335,13 +349,13 @@ function parseSquareIdsFromAreaInput() {
 function onSquareViewClick(event, square) {
 
     var infoText = '<p>Square: ' + String(square.id) + '</p>'
-    if (square.anomaly == INVALID_ANOMALY_VALUE) {
-        infoText += '<p>No data available yet.</p>'
-    } else {
+    if (square.data) {
+        infoText += '<p>Anomaly probability: ' + String(square.anomaly_probability) + '</p><br/>'
         infoText += '<p>Actual activity: ' + String(square.data.actual_activity) + '</p>'
         infoText += '<p>Mean activity in November: ' + String(square.data.mean_activity) + '</p>'
         infoText += '<p>Activity standard deviation in November: ' + String(square.data.standard_deviations) + '</p>'
-        infoText += '<p>Anomaly probability: ' + String(square.anomaly) + '</p>'
+    } else {
+        infoText += '<p>No data available yet.</p>'
     }
 
     infoView.setContent(infoText)
