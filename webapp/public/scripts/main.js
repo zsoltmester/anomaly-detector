@@ -17,6 +17,7 @@ let minuteSelect = $('#minuteSelect')
 let controlButton = $('#controlButton')
 let infoText = $('#infoText')
 var isSimulationRunning = false
+var currentSessionNumber = 0
 
 //
 // **************
@@ -94,6 +95,7 @@ function onControlButtonClick() {
     minuteSelect.prop('disabled', isSimulationRunning)
 
     if (isSimulationRunning) {
+        currentSessionNumber++
         startSimulation()
     } else {
         infoText.text('')
@@ -104,6 +106,8 @@ function startSimulation() {
 
     infoText.text('Loading the map...')
 
+    let savedSessionNumber = currentSessionNumber
+
     loadGeoJson(function(status, response) {
 
         if (status != '200') {
@@ -112,7 +116,7 @@ function startSimulation() {
             return
         }
 
-        if (!isSimulationRunning) {
+        if (!isSimulationRunning || currentSessionNumber !== savedSessionNumber) {
             return
         }
 
@@ -126,10 +130,6 @@ function startSimulation() {
 }
 
 function continueSimulation() {
-
-    if (!isSimulationRunning) {
-        return
-    }
 
     incrementTheToDate()
     downloadData()
@@ -160,6 +160,8 @@ function downloadData() {
 
     co(function*() {
 
+        let savedSessionNumber = currentSessionNumber
+
         Promise.resolve(
 
                 $.ajax({
@@ -175,7 +177,7 @@ function downloadData() {
 
             ).then(function(response) {
 
-                if (!isSimulationRunning) {
+                if (!isSimulationRunning || savedSessionNumber !== currentSessionNumber) {
                     return
                 }
 
@@ -198,7 +200,9 @@ function downloadData() {
 
             .catch(function(error) {
 
-                if (!isSimulationRunning) {
+                let savedSessionNumber = currentSessionNumber
+
+                if (!isSimulationRunning || savedSessionNumber !== currentSessionNumber) {
                     return
                 }
 
@@ -231,7 +235,17 @@ function waitForNextRound() {
     if (!(daySelect.val() == 31 && hourSelect.val() == 23 && minuteSelect.val() == 50)) {
 
         infoText.text('Waiting for the next pack of data...')
-        setTimeout(continueSimulation, 5000)
+
+        let savedSessionNumber = currentSessionNumber
+
+        setTimeout(function() {
+
+            if (!isSimulationRunning || savedSessionNumber !== currentSessionNumber) {
+                return
+            }
+
+            continueSimulation()
+        }, 5000)
 
     } else {
 

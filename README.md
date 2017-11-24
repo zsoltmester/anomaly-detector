@@ -6,7 +6,6 @@
 
 # TODO
 
-- Hibás a működése a RUN/START-nak. Könnyen összekavarodhat.
 - Egy új page, ahol a grafikonok jeleníthetők meg.
 - A square pagen ki is válaszhatóak legyenek a squareek.
 
