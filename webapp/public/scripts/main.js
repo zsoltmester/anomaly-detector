@@ -349,6 +349,7 @@ function parseSquareIdsFromAreaInput() {
 function onSquareViewClick(event, square) {
 
     var infoText = '<p>Square: ' + String(square.id) + '</p>'
+    infoText += '<p>Time: day ' + String(daySelect.val()) + ', at ' + (String(hourSelect.val()) == '0' ? '00' : String(hourSelect.val())) + ':' + (String(minuteSelect.val()) == '0' ? '00' : String(minuteSelect.val())) + '</p><br/>'
     if (square.data) {
         infoText += '<p>Anomaly probability: ' + String(square.anomaly_probability) + '</p><br/>'
         infoText += '<p>Actual activity: ' + String(square.data.actual_activity) + '</p>'
