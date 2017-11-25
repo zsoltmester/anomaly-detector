@@ -19,4 +19,6 @@ const Route = use('Route')
 
 Route.on('/').render('main')
 Route.on('/squares').render('squares')
+Route.on('/charts').render('charts')
+
 Route.get('/detectanomaly', 'AnomalyDetectorController.detectAnomaly')
