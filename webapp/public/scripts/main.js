@@ -219,11 +219,11 @@ function calculateAnomalyProbability(squareData) {
 
     let difference = Math.abs(squareData.mean_activity - squareData.actual_activity)
 
-    if (difference > 3 * squareData.standard_deviations) {
+    if (difference > 3 * squareData.standard_deviation) {
         return 1
-    } else if (difference > 2 * squareData.standard_deviations) {
+    } else if (difference > 2 * squareData.standard_deviation) {
         return 0.75
-    } else if (difference > squareData.standard_deviations) {
+    } else if (difference > squareData.standard_deviation) {
         return 0.5
     } else {
         return 0
@@ -368,7 +368,7 @@ function onSquareViewClick(event, square) {
         infoText += '<p>Anomaly probability: ' + String(square.anomaly_probability) + '</p><br/>'
         infoText += '<p>Actual activity: ' + String(square.data.actual_activity) + '</p>'
         infoText += '<p>Mean activity in November: ' + String(square.data.mean_activity) + '</p>'
-        infoText += '<p>Activity standard deviation in November: ' + String(square.data.standard_deviations) + '</p>'
+        infoText += '<p>Activity standard deviation in November: ' + String(square.data.standard_deviation) + '</p>'
     } else {
         infoText += '<p>No data available yet.</p>'
     }

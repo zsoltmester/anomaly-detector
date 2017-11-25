@@ -15,7 +15,7 @@ class AnomalyDetectorController {
 		var minutes = parseInt(hour) * 60 + parseInt(minute)
 
 		const square_data = yield Database
-			.select('square', 'mean_activity', 'actual_activity', 'standard_deviations')
+			.select('square', 'mean_activity', 'actual_activity', 'standard_deviation')
 			.from('squares')
 			.whereIn('square', squares)
 			.where('day', day)
