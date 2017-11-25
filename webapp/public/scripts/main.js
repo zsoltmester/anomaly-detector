@@ -165,7 +165,7 @@ function downloadData() {
         Promise.resolve(
 
                 $.ajax({
-                    url: '/detectanomaly',
+                    url: '/getdataformap',
                     method: 'GET',
                     data: {
                         'squares': squaresIds,
