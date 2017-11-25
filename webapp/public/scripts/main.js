@@ -206,7 +206,7 @@ function downloadData() {
                     return
                 }
 
-                console.log('Error while accessing detectanomaly service: ')
+                console.log('Error while accessing getdataformap service: ')
                 console.log(error)
                 onControlButtonClick()
                 infoText.text('Something unexpected happened.')

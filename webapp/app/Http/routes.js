@@ -22,3 +22,4 @@ Route.on('/squares').render('squares')
 Route.on('/charts').render('charts')
 
 Route.get('/getdataformap', 'AnomalyDetectorController.getDataForMap')
+Route.get('/getdataforchart', 'AnomalyDetectorController.getDataForChart')

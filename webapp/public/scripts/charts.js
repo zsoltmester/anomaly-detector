@@ -17,3 +17,32 @@ var chart = new Chart(chartView, {
     // Configuration options go here
     options: {}
 });
+
+co(function*() {
+
+	Promise.resolve(
+
+			$.ajax({
+				url: '/getdataforchart',
+				method: 'GET',
+				data: {
+					'square': '1',
+					'day': '1'
+				}
+			})
+
+		).then(function(response) {
+
+			console.log(response)
+
+		})
+
+		.catch(function(error) {
+
+			console.log('Error while accessing getdataforchart service: ')
+			console.log(error)
+			onControlButtonClick()
+			infoText.text('Something unexpected happened.')
+		})
+
+}.bind(this))
