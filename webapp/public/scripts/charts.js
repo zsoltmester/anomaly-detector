@@ -1,48 +1,155 @@
-var chartView = $("#chart");
-var chart = new Chart(chartView, {
-    // The type of chart we want to create
-    type: 'line',
+//
+// **********
+// Properties
+// **********
+//
 
-    // The data for our dataset
-    data: {
-        labels: ["January", "February", "March", "April", "May", "June", "July"],
-        datasets: [{
-            label: "My First dataset",
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
-            data: [0, 10, 5, 2, 20, 30, 45],
-        }]
-    },
+let chartView = $("#chartView")
+var chart
 
-    // Configuration options go here
-    options: {}
-});
+let squareInput = $('#squareInput')
+let daySelect = $('#daySelect')
 
-co(function*() {
+let showButton = $('#showButton')
+let infoText = $('#infoText')
 
-	Promise.resolve(
+var currentDownloadNumber = 0
 
-			$.ajax({
-				url: '/getdataforchart',
-				method: 'GET',
-				data: {
-					'square': '1',
-					'day': '1'
-				}
+//
+// **************
+// Initialization
+// **************
+//
+
+showButton.click(onShowButtonClick)
+onShowButtonClick()
+
+//
+// *********
+// Functions
+// *********
+//
+
+function onShowButtonClick() {
+
+    currentDownloadNumber++
+	downloadData()
+}
+
+
+function downloadData() {
+
+	infoText.text('Processing data...')
+
+	let savedDownloadNumber = currentDownloadNumber
+
+	co(function*() {
+
+		Promise.resolve(
+
+				$.ajax({
+					url: '/getdataforchart',
+					method: 'GET',
+					data: {
+						'square': squareInput.val(),
+						'day': daySelect.val()
+					}
+				})
+
+			).then(function(response) {
+
+	            if (savedDownloadNumber !== currentDownloadNumber) {
+                    return
+                }
+
+				infoText.text('')
+				initChart(response)
+
 			})
 
-		).then(function(response) {
+			.catch(function(error) {
 
-			console.log(response)
+	            if (savedDownloadNumber !== currentDownloadNumber) {
+                    return
+                }
 
-		})
+				console.log('Error while accessing getdataforchart service: ')
+				console.log(error)
+				infoText.text('Something unexpected happened.')
+			})
 
-		.catch(function(error) {
+	}.bind(this))
+}
 
-			console.log('Error while accessing getdataforchart service: ')
-			console.log(error)
-			onControlButtonClick()
-			infoText.text('Something unexpected happened.')
-		})
+function initChart(data) {
 
-}.bind(this))
+	data = data.reduce(function(map, object) {
+	    map[object.minutes] = {
+			'meanActivity' : object.mean_activity,
+			'actualActivity' : object.actual_activity,
+			'standardDeviation' : object.standard_deviation,
+		}
+	    return map
+	}, {})
+
+	let minutes = Object.keys(data).sort(function(a, b) {
+		return a - b
+	})
+
+	let meanActivities = []
+	let meanActivitiesPlusStandardDeviations = []
+	let meanActivitiesMinusStandardDeviations = []
+	let actualActivities = []
+	for (minute of minutes) {
+		meanActivities.push(data[minute].meanActivity)
+		meanActivitiesPlusStandardDeviations.push(data[minute].meanActivity + data[minute].standardDeviation)
+		meanActivitiesMinusStandardDeviations.push(data[minute].meanActivity - data[minute].standardDeviation)
+		actualActivities.push(data[minute].actualActivity)
+	}
+
+	if (chart) {
+		chart.destroy()
+	}
+
+	chart = new Chart(chartView, {
+
+		type: 'line',
+
+	    data: {
+	        labels: minutes,
+	        datasets: [{
+	            label: "Mean activity in November",
+	            backgroundColor: 'rgb(0, 0, 0)',
+	            borderColor: 'rgb(0, 0, 0)',
+	            data: meanActivities,
+				fill: false
+	        }, {
+	            label: "Mean activity, plus its standard deviation in November",
+	            backgroundColor: 'rgb(128, 128, 128)',
+	            borderColor: 'rgb(128, 128, 128)',
+	            data: meanActivitiesPlusStandardDeviations,
+				fill: false
+	        }, {
+	            label: "Mean activity, minus its standard deviation in November",
+	            backgroundColor: 'rgb(128, 128, 128)',
+	            borderColor: 'rgb(128, 128, 128)',
+	            data: meanActivitiesMinusStandardDeviations,
+				fill: false,
+				hidden: true
+	        }, {
+	            label: "Actual activity",
+	            backgroundColor: 'rgb(255, 0, 0)',
+	            borderColor: 'rgb(255, 0, 0)',
+	            data: actualActivities,
+				fill: false
+	        }]
+	    },
+
+	    options: {
+			tooltips: {
+	            mode: 'index',
+				intersect: false
+	        }
+		}
+	});
+}

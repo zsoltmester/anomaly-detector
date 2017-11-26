@@ -6,9 +6,12 @@
 
 # TODO
 
-- Egy új page, ahol a grafikonok jeleníthetők meg.
-- Összekötni a 2 paget.
-- A square pagen ki is válaszhatóak legyenek a squareek.
+- A square pagen ki is válaszhatóak legyenek a squareek
+- Összekötni a 2 paget
+- A stílusokat megcsinálni
+- Alapos felületi tesztelés
+
+- A térképen a detektáló logika fejlesztése
 
 - Python unit tests.
 - Node JS UI tests.
