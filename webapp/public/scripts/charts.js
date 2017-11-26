@@ -107,6 +107,13 @@ function initChart(data) {
 		actualActivities.push(data[minute].actualActivity)
 	}
 
+	var time = minutes.map(function (minuteString) {
+	    minute = parseInt(minuteString)
+		hour = parseInt(minute / 60)
+		minute -= hour * 60
+		return hour + ":" + (minute == 0 ? '00' : minute)
+	})
+
 	if (chart) {
 		chart.destroy()
 	}
@@ -116,7 +123,7 @@ function initChart(data) {
 		type: 'line',
 
 	    data: {
-	        labels: minutes,
+	        labels: time,
 	        datasets: [{
 	            label: "Mean activity in November",
 	            backgroundColor: 'rgb(0, 0, 0)',
