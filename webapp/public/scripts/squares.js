@@ -10,6 +10,14 @@ var infoView
 var squares
 
 //
+// **************
+// Initialization
+// **************
+//
+
+let parent = $('#parent').text()
+
+//
 // *********
 // Functions
 // *********

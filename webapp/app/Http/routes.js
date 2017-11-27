@@ -18,8 +18,17 @@
 const Route = use('Route')
 
 Route.on('/').render('main')
-Route.on('/squares').render('squares')
 Route.on('/charts').render('charts')
+
+Route.get('/mapsquares', function * (request, response) {
+	const parent = 'map'
+	yield response.sendView('squares', { parent })
+})
+
+Route.get('/chartsquares', function * (request, response) {
+	const parent = 'chart'
+	yield response.sendView('squares', { parent })
+})
 
 Route.get('/getdataformap', 'AnomalyDetectorController.getDataForMap')
 Route.get('/getdataforchart', 'AnomalyDetectorController.getDataForChart')
