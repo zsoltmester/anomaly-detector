@@ -5,9 +5,11 @@
 //
 
 var map
-var infoView
 
 var squares
+
+var parent
+var selectedSquares
 
 //
 // **************
@@ -15,7 +17,8 @@ var squares
 // **************
 //
 
-let parent = $('#parent').text()
+parent = $('#parent').text()
+selectedSquares = parent == 'map' ? getSelectedSquaresFromCookieForMap() : getSelectedSquareFromCookieForChart()
 
 //
 // *********
@@ -29,8 +32,6 @@ function initMap() {
         center: {lat: 45.461895, lng: 9.159832},
         zoom: 12
     })
-
-    infoView = new google.maps.InfoWindow
 
 	loadGeoJson(function(status, response) {
 
@@ -90,24 +91,32 @@ function createSquareViewsFromSquares() {
 
     for (square of squares) {
 
-        let squareView = new google.maps.Polygon({
-          paths: square.coordinates,
-          strokeColor: '#000000',
-          strokeOpacity: 0.75,
-          strokeWeight: 2,
-          fillColor: '#000000',
-          fillOpacity: 0.5
-        })
-
-        let clickedSquare = square
-
-        squareView.addListener('click', function (event) {
-
-            onSquareViewClick(event, clickedSquare)
-        })
-
+        let squareView = createSquareView(square)
         squareViews.push(squareView)
     }
+}
+
+function createSquareView(square) {
+
+	let isSelected = selectedSquares.indexOf(square.id) > -1
+
+	let squareView = new google.maps.Polygon({
+	  paths: square.coordinates,
+	  strokeColor: '#000000',
+	  strokeOpacity: 0.75,
+	  strokeWeight: 2,
+	  fillColor: isSelected ? '#ff0000' : '#000000',
+	  fillOpacity: 0.5
+	})
+
+	let clickedSquare = square
+
+	squareView.addListener('click', function (event) {
+
+		onSquareViewClick(event, clickedSquare)
+	})
+
+	return squareView
 }
 
 function displaySquareViews() {
@@ -120,8 +129,39 @@ function displaySquareViews() {
 
 function onSquareViewClick(event, square) {
 
-    infoView.setContent('<p>Square identifier: ' + String(square.id) + '</p>')
-    infoView.setPosition(event.latLng)
+	if (parent == 'map') {
+		handleSelectionForMap(square)
+	} else {
+		handleSelectionForChart(square)
+	}
+}
 
-    infoView.open(map)
+function handleSelectionForMap(square) {
+
+	let isSelected = selectedSquares.indexOf(square.id) > -1
+
+	if (isSelected) {
+		if (selectedSquares.length > 1) {
+			selectedSquares.splice(selectedSquares.indexOf(square.id), 1);
+			squareViews[square.id - 1].setOptions({fillColor: '#000000'})
+		}
+	} else {
+		selectedSquares.push(square.id)
+		squareViews[square.id - 1].setOptions({fillColor: '#ff0000'})
+	}
+
+	setSelectedSquaresToCookieForMap(selectedSquares)
+}
+
+function handleSelectionForChart(square) {
+
+	let isSelected = selectedSquares.indexOf(square.id) > -1
+
+	if (!isSelected) {
+		squareViews[selectedSquares[0] - 1].setOptions({fillColor: '#000000'})
+		squareViews[square.id - 1].setOptions({fillColor: '#ff0000'})
+		selectedSquares = [square.id]
+	}
+
+	setSelectedSquareToCookieForChart(selectedSquares)
 }
