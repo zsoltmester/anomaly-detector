@@ -5,7 +5,6 @@
 //
 
 var map
-let areaInput = $('#areaInput')
 var squares
 var squareViews
 var infoView
@@ -89,7 +88,6 @@ function onControlButtonClick() {
 
     isSimulationRunning = !isSimulationRunning
 
-    areaInput.prop('disabled', isSimulationRunning)
     daySelect.prop('disabled', isSimulationRunning)
     hourSelect.prop('disabled', isSimulationRunning)
     minuteSelect.prop('disabled', isSimulationRunning)
@@ -121,7 +119,7 @@ function startSimulation() {
         }
 
         let geoJson = JSON.parse(response)
-        let squareIds = parseSquareIdsFromAreaInput()
+        let squareIds = getSelectedSquaresFromCookieForMap()
         parseSquaresFromGeoJson(geoJson, squareIds)
         updateSquareViews()
 
@@ -345,19 +343,6 @@ function removeSquareViews() {
 
         squareView.setMap(null)
     }
-}
-
-function parseSquareIdsFromAreaInput() {
-
-    var squareIds = []
-    let input = areaInput.val().split(',')
-
-    for (rawSquareId of input) {
-
-        squareIds.push(parseInt(rawSquareId.trim()))
-    }
-
-    return squareIds
 }
 
 function onSquareViewClick(event, square) {
