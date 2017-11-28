@@ -6,8 +6,6 @@
 
 # TODO
 
-- A square pagen ki is válaszhatóak legyenek a squareek
-- Összekötni a 2 paget
 - A stílusokat megcsinálni
 - Alapos felületi tesztelés
 
