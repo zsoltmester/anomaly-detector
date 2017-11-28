@@ -7,7 +7,6 @@
 let chartView = $("#chartView")
 var chart
 
-let squareInput = $('#squareInput')
 let daySelect = $('#daySelect')
 
 let showButton = $('#showButton')
@@ -51,7 +50,7 @@ function downloadData() {
 					url: '/getdataforchart',
 					method: 'GET',
 					data: {
-						'square': squareInput.val(),
+						'square': getSelectedSquareFromCookieForChart().toString(),
 						'day': daySelect.val()
 					}
 				})
