@@ -6,9 +6,6 @@
 
 # TODO
 
-- A stílusokat megcsinálni
-- Alapos felületi tesztelés
-
 - A térképen a detektáló logika fejlesztése
 
 - Python unit tests.

@@ -9,10 +9,10 @@ input {
     text-align: center;
 }
 
-.overlay {
+.overlay, .chart-menu {
 
     height: 100%;
-    width: 25%;
+    width: 400px;
     position: fixed;
     z-index: 1;
     left: 0px;
@@ -20,9 +20,15 @@ input {
     background-color: rgba(255, 255, 255, 0.9);
 }
 
-.overlay-content {
+.overlay-content, .chart-menu-content {
 
     position: relative;
     top: 25%;
     text-align: center;
+}
+
+#chartView {
+
+	position: fixed;
+    top: 0;
 }

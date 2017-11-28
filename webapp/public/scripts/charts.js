@@ -124,19 +124,19 @@ function initChart(data) {
 	    data: {
 	        labels: time,
 	        datasets: [{
-	            label: "Mean activity in November",
+	            label: "Mean activity",
 	            backgroundColor: 'rgb(0, 0, 0)',
 	            borderColor: 'rgb(0, 0, 0)',
 	            data: meanActivities,
 				fill: false
 	        }, {
-	            label: "Mean activity, plus its standard deviation in November",
+	            label: "Mean activity + standard deviation",
 	            backgroundColor: 'rgb(128, 128, 128)',
 	            borderColor: 'rgb(128, 128, 128)',
 	            data: meanActivitiesPlusStandardDeviations,
 				fill: false
 	        }, {
-	            label: "Mean activity, minus its standard deviation in November",
+	            label: "Mean activity - standard deviation",
 	            backgroundColor: 'rgb(128, 128, 128)',
 	            borderColor: 'rgb(128, 128, 128)',
 	            data: meanActivitiesMinusStandardDeviations,
@@ -155,7 +155,15 @@ function initChart(data) {
 			tooltips: {
 	            mode: 'index',
 				intersect: false
-	        }
+	        },
+            layout: {
+                padding: {
+                    left: 400,
+                    right: 0,
+                    top: 0,
+                    bottom: 0
+                }
+            }
 		}
 	});
 }
