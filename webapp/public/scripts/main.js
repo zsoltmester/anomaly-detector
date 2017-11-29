@@ -215,17 +215,7 @@ function downloadData() {
 
 function calculateAnomalyProbability(squareData) {
 
-    let difference = Math.abs(squareData.mean_activity - squareData.actual_activity)
-
-    if (difference > 3 * squareData.standard_deviation) {
-        return 1
-    } else if (difference > 2 * squareData.standard_deviation) {
-        return 0.75
-    } else if (difference > squareData.standard_deviation) {
-        return 0.5
-    } else {
-        return 0
-    }
+    return Math.abs(squareData.mean_activity - squareData.actual_activity) / (2 * squareData.standard_deviation)
 }
 
 function waitForNextRound() {
