@@ -6,13 +6,13 @@
 
 # TODO
 
-- Python unit tesztek
-- Node JS UI tesztek
-
-- A felhasználói dokumentáció megírása
-- A fejlesztői dokumentáció megírása
-
-- December 11 délelőtt elküldeni
+- Fejlesztői dokumentáció / Megoldási terv megírása
+- Fejlesztői dokumentáció / Megvalósítás megírása
+- Fejlesztői dokumentáció / Tesztelés megírása
+- Word-be áttenni a megírt szöveget és az elvárt formai követelmények szerint megformázni
+- Legkésőbb december 11 délelőtt elküldeni a konzulensnek
+- Fejleszteni a doksit az alapján, amit a konzulens mond
+- December 15-ig le kell adnom a szakdolgozatot
 
 # Események
 

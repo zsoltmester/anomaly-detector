@@ -30,7 +30,9 @@ function initMap() {
 
 	map = new google.maps.Map(document.getElementById('map'), {
         center: {lat: 45.461895, lng: 9.159832},
-        zoom: 12
+        zoom: 12,
+        streetViewControl: false,
+		fullscreenControl: false
     })
 
 	loadGeoJson(function(status, response) {

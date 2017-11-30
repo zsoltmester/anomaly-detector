@@ -43,7 +43,9 @@ controlButton.click(onControlButtonClick)
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
         center: {lat: 45.47771, lng: 9.115242},
-        zoom: 16
+        zoom: 16,
+        streetViewControl: false,
+        fullscreenControl: false
     })
     infoView = new google.maps.InfoWindow
 }

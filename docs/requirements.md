@@ -25,9 +25,9 @@ A bírálatból:
 - A feladatrövid ismertetése (mire való a szoftver)
 - Célközönség (kik, mikor, mire használhatják a programot)
 - A rendszer használatához szükséges minimális, illetve optimális HW/SW környezet
-- Első üzembehelyezés leírása -ha van ilyen-, a program indítása(kivéve, ha nem egy önálló alkalmazásról, hanem egy meglévőrendszerúj komponenséről van szó). Itt ellenőrizzük, hogy a telepítési útmutató megfelel-e a valóságos telepítési folyamatnak.
+- Első üzembehelyezés leírása -ha van ilyen-, a program indítása(kivéve, ha nem egy önálló alkalmazásról, hanem egy meglévő rendszer új komponenséről van szó). Itt ellenőrizzük, hogy a telepítési útmutató megfelel-e a valóságos telepítési folyamatnak.
 - Általános felhasználói tájékoztató (például a szokásostól eltérő képernyő-, billentyű-, illetve egérkezelés leírása, teendők hibaüzenetek esetén stb.).
-- A rendszer funkcióinak ismertetése. A feladat jellegéből fakadóan célszerű lehet ezt folyamatszerűen, képernyőképekkel alátámasztvabemutatni. A funkciókat ajánlatos a felhasználói szintek szerint csoportosítani. Itt vegyük figyelembe, hogy a leírás a fejlesztői dokumentációban meghatározott részfeladathoz illeszkedik-e, az ott meghatározott funkciókat/használati eseteket írja-e le?
+- A rendszer funkcióinak ismertetése. A feladat jellegéből fakadóan célszerű lehet ezt folyamatszerűen, képernyőképekkel alátámasztva bemutatni. A funkciókat ajánlatos a felhasználói szintek szerint csoportosítani. Itt vegyük figyelembe, hogy a leírás a fejlesztői dokumentációban meghatározott részfeladathoz illeszkedik-e, az ott meghatározott funkciókat/használati eseteket írja-e le?
 - A rendszer futás közbeni üzenetei (hibaüzenetek, figyelmeztető üzenetek, felszólító üzenetek stb.) és azok magyarázata - az esetleges üzemeltetési teendőkkel együtt. Itt vegyük figyelembe, hogy tartalmaz-e biztonsági, illetve hibaelhárítási előírásokat?
 - Egyéb, a szoftver használatához szükséges információk.
 
