@@ -6,10 +6,16 @@
 
 # TODO
 
+- Események keresése 2013 decemberéből, Milánóból
 - A térképen a detektáló logika fejlesztése
 
-- Python unit tests.
-- Node JS UI tests.
+- Python unit tesztek
+- Node JS UI tesztek
+
+- Összerakni / szerezni dolgozat mintát
+- A bevezetés megírása
+- A felhasználói dokumentáció megírása
+- A fejlesztői dokumentáció megírása
 
 # Anomaly Detector
 
