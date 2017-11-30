@@ -12,8 +12,6 @@
 - Python unit tesztek
 - Node JS UI tesztek
 
-- Összerakni / szerezni dolgozat mintát
-- A bevezetés megírása
 - A felhasználói dokumentáció megírása
 - A fejlesztői dokumentáció megírása
 
