@@ -6,14 +6,33 @@
 
 # TODO
 
-- Események keresése 2013 decemberéből, Milánóból
-- A térképen a detektáló logika fejlesztése
-
 - Python unit tesztek
 - Node JS UI tesztek
 
 - A felhasználói dokumentáció megírása
 - A fejlesztői dokumentáció megírása
+
+- December 11 délelőtt elküldeni
+
+# Események
+
+San siro: https://en.wikipedia.org/wiki/2013%E2%80%9314_A.C._Milan_season, https://www.uefa.com/uefachampionsleague/season=2014/matches/round=2000479/match=2011845/postmatch/index.html
+- 1. 15:00 (Inter - Sampdoria)
+- 8. 20:45 (Inter - Parma)
+- 11. 20:45 (Milan - Ajax)
+- 15. 20:45 (Milan - Roma)
+- 22. 20:45 (Inter - Milan)
+
+Teatro alla Scala: https://www.opera-online.com/en/items/productions/la-traviata-teatro-alla-scala-2013-2014-2013
+December 07, 2013 18:00:00
+December 12, 2013 20:00:00
+December 15, 2013 20:00:00
+December 18, 2013 20:00:00
+December 22, 2013 15:00:00
+December 28, 2013 20:00:00
+December 31, 2013 18:00:00
+
+The Feast of St. Ambrose: http://www.hotelwindsormilan.com/en/the-feast-of-st-ambrose-patron-of-milan/
 
 # Anomaly Detector
 

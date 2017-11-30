@@ -18,6 +18,8 @@ let infoText = $('#infoText')
 var isSimulationRunning = false
 var currentSessionNumber = 0
 
+const ANOMALY_CONTROL = 0.01
+
 //
 // **************
 // Initialization
@@ -215,7 +217,7 @@ function downloadData() {
 
 function calculateAnomalyProbability(squareData) {
 
-    return Math.abs(squareData.mean_activity - squareData.actual_activity) / (2 * squareData.standard_deviation)
+    return Math.abs(squareData.mean_activity - squareData.actual_activity) / (2 * squareData.standard_deviation + ANOMALY_CONTROL)
 }
 
 function waitForNextRound() {
@@ -295,7 +297,7 @@ function createSquareViewsFromSquares() {
           strokeOpacity: 0.75,
           strokeWeight: 2,
           fillColor: square.anomaly_probability ? '#FF0000' : '#FFFFFF',
-          fillOpacity: square.anomaly_probability ? square.anomaly_probability : 0.5
+          fillOpacity: square.anomaly_probability ? (square.anomaly_probability > 1 ? 1 : square.anomaly_probability) : 0.5
         })
 
         let clickedSquare = square
