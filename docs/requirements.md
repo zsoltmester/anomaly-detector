@@ -16,7 +16,7 @@ A Bevezetés a témaválasztás indoklását és a megoldandó feladat rövid, k
 
 ## Felhasználói dokumentáció
 
-A Felhasználói dokumentáció tartalmazza
+A felhasználói dokumentáció tartalmazza
 - a megoldott probléma rövid megfogalmazását,
 - a felhasznált módszerek rövid leírását,
 - a program használatához szükséges összes információt.
@@ -33,7 +33,7 @@ A bírálatból:
 
 ## Fejlesztői dokumentáció
 
-A Fejlesztői dokumentációtartalmazza
+A fejlesztői dokumentáció tartalmazza
 - a probléma részletes specifikációját,
 - a felhasznált módszerek részletes leírását, a használt fogalmak definícióját,
 - a program logikai és fizikai szerkezetének leírását (adatszerkezetek, adatbázisok, modulfelbontás),

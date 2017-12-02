@@ -4,16 +4,6 @@
 - `npm run serve:dev` (development), `npm run serve` (production)
 - 5855, 5856, 5955, 5956
 
-# TODO
-
-- Fejlesztői dokumentáció / Megoldási terv megírása
-- Fejlesztői dokumentáció / Megvalósítás megírása
-- Fejlesztői dokumentáció / Tesztelés megírása
-- Word-be áttenni a megírt szöveget és az elvárt formai követelmények szerint megformázni
-- Legkésőbb december 11 délelőtt elküldeni a konzulensnek
-- Fejleszteni a doksit az alapján, amit a konzulens mond
-- December 15-ig le kell adnom a szakdolgozatot
-
 # Események
 
 San siro: https://en.wikipedia.org/wiki/2013%E2%80%9314_A.C._Milan_season, https://www.uefa.com/uefachampionsleague/season=2014/matches/round=2000479/match=2011845/postmatch/index.html
