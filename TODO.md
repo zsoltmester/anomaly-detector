@@ -7,7 +7,6 @@
 		- Backend
 		- Frontend
 	- Fejlesztői dokumentáció / Megvalósítás megírása
-		- Script
 		- Webapp
 	- Fejlesztői dokumentáció / Tesztelés megírása
 	- Word-be áttenni a megírt szöveget és az elvárt formai követelmények szerint megformázni
@@ -41,6 +40,4 @@ The Feast of St. Ambrose: http://www.hotelwindsormilan.com/en/the-feast-of-st-am
 
 ### Futtatási példák
 
-- `python detect_anomaly.py -h`, de egy példa: `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square_from 1 --square_to 2 --action visualize`
-- `python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --square_from 1 --square_to 2 --action save > log1000.txt 2>&1`
 - `npm run serve:dev` (development), `npm run serve` (production)

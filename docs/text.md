@@ -292,7 +292,115 @@ TODO
 
 ### Script
 
-TODO
+A forráskód az *algorithm* mappában található meg. Itt a megoldási tervben definiált Python fájlok vannak.
+
+A forráskód PEP 8 szerint van formázva. A PEP 8 a Python fejlesztői által ajánlott és a legelterjedtebb formázási stílus. A kódot a 2.3.1-es *pycodestlye*-al validálom. Az *algorithm* mappában található *setup.cfg* a *pycodestlye* opcionális konfigurációs fájla. Csak annyit tettem bele, hogy ne generáljon warningot a hosszú sorok miatt. A kód ellenőrzőt az *algorithm* mappában indított *pycodestlye* parancsal lehet futtatni. Hiba esetén kiírja a hibák helyét és hogy mi volt a probléma az egyes helyeken; hiba hiányában viszont nem ír ki semmit. Példa hibákra:
+```
+zsmester@thinkpad:~/anomaly-detector/algorithm$ pycodestyle
+./common_function.py:42:36: E201 whitespace after '('
+./constant.py:13:14: E222 multiple spaces after operator
+./detect_anomaly.py:105:14: E261 at least two spaces before inline comment
+./display.py:17:104: E251 unexpected spaces around keyword / parameter equals
+```
+A végleges forráskódra nem ír hibát.
+
+3.5-ös verziójú Python-t használtam, a környezet összerakásához pedig 1.6.5-ös *Anaconda Cloud command line manager*-t. Utóbbi segítségével fértem hozzá az alábbbi library-khez:
+- *numpy*
+- *sklearn*
+- *matplotlib*: A grafikonok megjelenítéséhez.
+- *scipy*: Az interplációs függvényekhez.
+
+A megoldási tervenek megfelelően készítettem el a következő modulokat (kiemelve a fontosabb függvényiket a dokumentációjukkal együtt):
+- **detect_anomaly.py**: A megoldási tervnek megfelelően ez a belépési pont, a skript csak akkor fut, ha konkréten ez a file lett futtatva, és nem csak importálva: `if __name__ == '__main__':`.
+- **initialise.py**
+```python
+def initialise():
+    """Initialises the algorithm's parameters.
+
+    Parses the script's arguments. Based on that, it returns the initial parameters of the alogrithm.
+
+    Returns:
+        A tuple, with the following elements.
+        - 1.: What action to perform. It can be constant.ACTION_VISUALIZE or constant.ACTION_SAVE.
+        - 2.: List of the paths (as strings) of the training files.
+        - 3.: List of the paths (as strings) of the testing files.
+        - 4.: List of squares (as ints) to analyze.
+        - 5.: List of the features to combine. The valid values are the constant.FEATURE_* global constants.
+    """
+```
+- **common_function.py**: Például:
+```python
+def sort_arrays_based_on_the_first(first_array, second_array):
+    """Sort the first array then the second in the same order as the first.
+
+    Args:
+        first_array: The first array to sort.
+        second_arrays: The second array to sort.
+
+    Returns:
+        A tuple with the sorted first and second array.
+    """
+```
+- **constants.py**
+- **preprocess.py**:
+```python
+def load_squares(files, squares):
+    """Returns the given squares from the given files.
+
+    Args:
+        files: Paths to the files. It must be an iterable on strings.
+        squares: The squares to load. It must be a list of integers.
+
+    Returns:
+        A dictionary, where the keys are the squares (as ints) and the values are the features with values, as dictionaries.
+    """
+```
+- **display.py**
+- **interpolate.py**:
+```python
+def create_interpolation_polynomial(x_points, y_points):
+    """Create the interpolation polynomial based on the given x and y points.
+
+    It is using spline interpolation.
+
+    Args:
+        x_points: The x points as a list of ints.
+        y_points: The y points as a list of ints.
+        len(x_points) == len(y_points)
+
+    Returns:
+        The x and y points in a dictionary that represent the interpolation polynomial. It looks like this:
+        { constant.X: x, constant.Y: y}
+    """
+```
+- **save.py**:
+```python
+def write_square_to_database(square, mean_activities, actual_activities, standard_deviations):
+    """Saves the given square's properties to an SQLite database.
+
+    Args:
+        square: The square ID, as an int.
+        mean_activities: The mean activities based on the training data in form { day_number_as_int: { minutes: mean activity, ...}, ... }.
+        actual_activities: The actual activities in form { day_number_as_int: { minutes: actual activity, ...}, ... }.
+        standard_deviations: The standard deviations of the training data in form { day_number_as_int: { minutes: standard deviation, ...}, ... }.
+    """
+```
+
+A forráskód docstring-ek segítségével dokumentálva van, amiből HTML dokumentációt a *Sphinx*-el lehet generálni. Az *algoritm/docs* könyvtárban egy *make html* parancsot futtatva a *_build/html* könyvtárba generálódik le a HTML dokumentáció, ami így néz ki:
+![A skript dokumentációjánk a főoldala.](script-docs-main.png)
+![Skipt dokumentáció - preprocess.](script-docs-preprocess.png)
+![Skipt dokumentáció - preprocess - drop_outliers().](script-docs-preprocess-drop_outliers.png)
+
+A skriptet a megoldási tervben leírt paraméterekkel lehet futtatni. Az *algorithm* mappában található egy *run-anomaly-detector.sh* bash skript, amit az *erdos.inf.elte.hu* szerveren használtam az adatbázis legenerálásához. 10 menetben készítettem el a teljes adatbázist, hogy ne foglaljam le a szerver összes memóriáját a futás alatt:
+```bash
+# ...
+python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --square_from 2000 --square_to 2999 --action save > log3000.txt 2>&1
+# ...
+```
+A végleges adatbázis 1.9 GB lett.
+
+Az algoritmus tesztelésére használható a *visualize* mód, például így: `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square_from 1 --square_to 1 --action visualize`:
+![Skript - vizualizációs mód teszteléshez.](script-visualize.png)
 
 ### Webapp
 

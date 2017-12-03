@@ -8,7 +8,7 @@ import constant
 
 
 def write_square_to_database(square, mean_activities, actual_activities, standard_deviations):
-    """Saves the given square' properties to an SQLite database.
+    """Saves the given square's properties to an SQLite database.
 
     Args:
         square: The square ID, as an int.
