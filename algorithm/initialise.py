@@ -27,12 +27,12 @@ def initialise():
     parser = argparse.ArgumentParser(description='The algorithm for the anomaly detector application.')
     action_choices = [constant.ACTION_VISUALIZE, constant.ACTION_SAVE]
     parser.add_argument('-a', '--action', help='Which action to perform. The vizualization will display the polinoms. The save will insert the results to a database.', choices=action_choices, required=True)
-    parser.add_argument('--training', help='Path to the root directory of the training dataset.', required=True)
-    parser.add_argument('--testing', help='Path to the root directory of the testing dataset.', required=True)
-    parser.add_argument('--square_from', help='The first square to analyze. It can be a value from 1 to 10000. It can be the same as --square_to.', required=True)
-    parser.add_argument('--square_to', help='The last square to analyze. It can be a value from 1 to 10000.  It can be the same as --square_from.', required=True)
+    parser.add_argument('--training', help='Path to the root directory of the training dataset. It can be relative or aboslute.', required=True)
+    parser.add_argument('--testing', help='Path to the root directory of the testing dataset. It can be relative or aboslute.', required=True)
+    parser.add_argument('--square_from', help='The first square to analyze. It can be a value from 1 to 10000. It can be the equal or less than --square_to.', required=True)
+    parser.add_argument('--square_to', help='The last square to analyze. It can be a value from 1 to 10000.  It can be the equal or greater --square_from.', required=True)
     feature_choices = [constant.FEATURE_SMS_IN, constant.FEATURE_SMS_OUT, constant.FEATURE_CALL_IN, constant.FEATURE_CALL_OUT, constant.FEATURE_INTERNET]
-    parser.add_argument('-f', '--features', help='Which features to use to generate the polinomials. Also, comma separated values are valid, which means it will combine the given features. By default, it combines all the features.', choices=feature_choices, nargs='+', required=False, default=feature_choices)
+    parser.add_argument('-f', '--features', help='Which features to use to generate the activities. Also, comma separated values are valid, which means it will combine the given features. By default, it combines all the features.', choices=feature_choices, nargs='+', required=False, default=feature_choices)
 
     args = vars(parser.parse_args())
 

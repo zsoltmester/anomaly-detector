@@ -94,7 +94,7 @@ A kijelölés azonnal érvénybe lép, így egy vissza navigálás után, már e
 
 ### A probléma részletes specifikációja
 
-#### Az adathalmaz
+#### Adathalmaz
 
 A Telecom Italia 2014 elején közzétette a 2013 novemberében és decemberében, Milánóban naplózott felhasználói aktivitást. Jelenleg mindenki számára elérhető a *dandelion.eu*-n, ami így mutatja be az adathalmazt:
 > At the beginning of 2014, Telecom Italia launched the first edition of the Big Data Challenge, a contest designed to stimulate the creation and development of innovative technological ideas in the Big Data field. SpazioDati is the technology partner hosting the data distribution platform, using dandelion.eu.
@@ -162,16 +162,16 @@ d: 235 m
 ```
 (https://dandelion.eu/datagems/SpazioDati/milano-grid/description/, 2017. 12. 02.)
 
-#### A feladat
+#### Feladat
 
 A feladatom ennek az adathalmaznak a segítségével anomáliákat keresni a felhasználói aktivitásban. Anomáliának tekintsük az átlagos aktivitástól eltérő aktivitást. De mi az az aktivitás, a átlagos aktivitás és az átlagos aktivitástól eltérő aktivitás?
 - **Aktivitás:** egy valós szám, ami a felhasználók internethasználatából, az indított vagy fogadott telefonhívások számából és a küldött vagy kapott SMS-ek számából lett generálva. Mivel az előbb említett számok megtalálhatóak az adathalmazban minden négyzetre és időpontra, ezért azokat tudjuk használni az aktivitás kiszámítására. Az aktivitás tartozhat egy terület és egy időintervallum párosához, például a 42-es négyzeten 2013 december 3-án 10:00-tól 10:10-ig vagy a 3-as négyzeten 2013 november első napjától november utolsó napjáig. Így ha minél nagyobb időintervallumot veszünk, valószínűleg annál nagyobb aktivitást is fogunk kapni.
 - **Átlagos aktivitás:** egy szám, ami egy terület egy napon belüli időintervallumához tartozik. Például a 42-es négyzeten 15:10-től 15:20-ig. Az átlagos aktivitást egy terület egy időintervallumához úgy számoljuk ki, hogy vesszük az összes olyan már ismert aktivitást, ami arra a területre és arra az időintervallumra vonatkozik és ezeket átlagoljuk. Az előző példánál maradva (42-es négyzeten 15:10-től 15:20-ig), az átlagos aktivitást kiszámolhatjuk a 42-es négyzet 2013 november 1. 15:10 - 15:20, november 2. 15:10 - 15:20, stb aktivitásokból. Ha már legalább 2-ből számultuk ki, akkor azt már átlagosnak tekintjük, még ha abból nem is lehet sok következtetést levonni.
 - **Átlagos aktivitástól eltérő aktivitás (anomália):** egy szám, ami egy átlagos aktivitáshoz és egy aktivitáshoz tartozik, ahol a terület és az időintervallum is megegyezik. Ezt a számot az adott átlagos aktivitásból és az adott aktivitásból (nevezzük ezt aktuálisnak) számoljuk ki. A szám arra kell, hogy reflektáljon, hogy történt-e a területen az aktuális időintervallumban valami szokatlan esemény, mint például egy sport rendezvény vagy egy színházi előadás.
 
-### Az adathalmaz felbontása
+### Az adathalmaz felosztása
 
-Hogy megfelelő mennyiségű aktivitásból számoljam ki az átlagos aktivitást, ezért az adathalmazt 2 részre osztottam:
+Hogy megfelelő mennyiségű aktivitásból számoljam ki az átlagos aktivitást, ezért az adathalmazt 2 részre osztom:
 - A novemberi adatokat használom arra, hogy kiszámoljam az átlagos aktivitást az összes területre és az összes időintervallumra. Ezeket az adatok még csoportosítom aszerint, hogy egy nap hétvégére vagy hétköznapra esik. Tehát például az átlagos aktivitás a 42-es négyzeten 15:10 és 15:20 közt más lesz, ha egy hétköznapot és más lesz, ha egy hétvégét nézünk. Ez azért szükséges, mert egy átlagos hétvégén az aktivitás kissebb, mint egy átlagos hétköznapon. Például itt van a 6547-es területen a hétvége és a hétköznap:
 ![6547-es terület, hétköznap.](chart-screen-6547-december-2.png)
 ![6547-es terület, hétvége.](chart-screen-6547-december-1.png)
@@ -182,11 +182,112 @@ Ha több évnyi adat állna rendelkezésre, akkor érdemes lenne a hét minden n
 ### Az alkalmazás komponensei
 
 Az alkalmazás 3 komponensből épül fel:
-- Egy különálló algoritmus / program, ami feldolgozza az adatokat és kiszámolja az átlagos novemberi aktivitást és az aktivitás szórását minden négyzetre és minden időintervallumra (beleértve a hétvégét és a hétköznapot is). Ezen felül még kiszámolja december minden időintervallumára és minden területére az aktivitást. Az adatokat egy adatbázisba menti el.
+- Egy script, ami feldolgozza az adatokat és kiszámolja az átlagos novemberi aktivitást és az aktivitás szórását minden négyzetre és minden időintervallumra (beleértve a hétvégét és a hétköznapot is). Ezen felül még kiszámolja december minden időintervallumára és minden területére az aktivitást. Az adatokat egy adatbázisba menti el.
 - Egy backend komponens, aki az adatbázist tudja olvasni. Tőle kérhetők le adatok az adatbázisból.
 - Egy frontend komponens, ami a szimuláció és a grafikonok megjelenítésért felel.
 
 A 3 komponens kapcsolata:
-- Az algoritmus nem tud sem a backendről, sem a frontendről, ő csak az adatbázis ekészítéséért felel.
-- A backend nem tud semmit a frontendről, ő csak az algoritmus által generált adatbázis olvasásáért felel.
+- A skript nem tud sem a backendről, sem a frontendről, ő csak az adatbázis elkészítéséért felel.
+- A backend nem tud semmit a frontendről, ő csak az script által generált adatbázis olvasásáért felel.
 - A frontend a backendtől tudja lekérdezni az neki éppen szükséges adatokat.
+
+#### Skript
+
+> Egy skript, ami feldolgozza az adatokat és kiszámolja az átlagos novemberi aktivitást és az aktivitás szórását minden négyzetre és minden időintervallumra (beleértve a hétvégét és a hétköznapot is). Ezen felül még kiszámolja december minden időintervallumára és minden területére az aktivitást. Az adatokat egy adatbázisba menti el.
+
+Ez egy Python skript lesz. Azért a Python-t választottam, mert:
+- népszerű nyelv a közösség körében a mesterséges tanulásos algoritmusokhoz és alkalmazásokhoz, így az interneten könnyen találhatok választ a kérdéseimre.
+- a *NumPy* és *scikit-learn* library-kre tudok támaszkodni, ha mesterséges tanulással kapcsolatos algoritmust akarok futtatni.
+
+A következő paraméterekkel lehet inicializálni az algoritmust:
+```
+-h, --help            show this help message and exit
+-a {visualize,save}, --action {visualize,save}
+					  Which action to perform. The vizualization will display the polinoms. The save will insert the results to a database.
+--training TRAINING   Path to the root directory of the training dataset. It can be relative or aboslute.
+--testing TESTING     Path to the root directory of the testing dataset. It can be relative or aboslute.
+--square_from SQUARE_FROM
+					  The first square to analyze. It can be a value from 1 to 10000. It can be the equal or less than --square_to.
+--square_to SQUARE_TO
+					  The last square to analyze. It can be a value from 1 to 10000. It can be the equal or greater --square_from.
+-f {sms-in,sms-out,call-in,call-out,internet} [{sms-in,sms-out,call-in,call-out,internet} ...], --features {sms-in,sms-out,call-in,call-out,internet} [{sms-in,sms-out,call-in,call-out,internet} ...]
+					  Which features to use to generate the activities. Also, comma separated values are valid, which means it will combine the given features. By default, it combines all the features.
+```
+A két féle futási mód a vizualizáció és a mentés. Az előbbi tesztelésre lesz hasznos, az utóbbi pedig magának a skriptnek a célja.
+A *--square_from* és a *--square_to* kapcsolók azért fognak kelleni, hogy kevesebb memóriával rendelkező gépeken is tudjon futni a script. A scriptnek azért lesz nagy a memória igénye, mert be kell olvasnia 20 GB szöveges fájlt és a memóriába kell addig tartania, még fel nem dolgozza azokat.
+A *--features* kapcsoló teszteléshez lesz hasznos. De a végleges adatbázis legeneráláshoz nem kell használni, hisz ott az összes feature-ből szeretnénk legenerálni az aktivitást.
+
+A skript az *Adathalmaz* fejezetben leírt adatfájlokból dolgozik. Ezeket a fájlokat el kell helyezni egy-egy mappában, az egyikben a novemberiket, egy másikban a decemberiket. Például így:
+```
+zsmester@thinkpad:~/big-data-repository/milano/cdr$ tree
+.
+├── 2013-11
+│   ├── sms-call-internet-mi-2013-11-01.txt
+│   ├── sms-call-internet-mi-2013-11-02.txt
+#...
+│   ├── sms-call-internet-mi-2013-11-29.txt
+│   └── sms-call-internet-mi-2013-11-30.txt
+└── 2013-12
+    ├── sms-call-internet-mi-2013-12-01.txt
+    ├── sms-call-internet-mi-2013-12-02.txt
+	#...
+    ├── sms-call-internet-mi-2013-12-30.txt
+    └── sms-call-internet-mi-2013-12-31.txt
+
+2 directories, 61 files
+```
+A skriptnek ezeknek a mappáknak relatív vagy abszolút útvonalát kell megadni a *--training* és a *--testing* kapcsolók segítségével.
+
+A scriptet fel lehet osztani funkciók mentén különböző modulokra:
+- **detect_anomaly.py**: Ez a belépési pont. Ezt kell elindítani az előbb írt argumentumokkal.
+- **initialise.py**: Tartalmazza az inicializáláshoz szükséges logikát, mint például az argumentumok beolvasása.
+- **common_function.py**: Biztosan lesz pár olyan függvény, amit több modulból is szeretnénk hívni, de nem tartozik egyikhez sem, mert azoknál általánosabb (például egy sor hozzáadása egy mátrixhoz), akkor azokat ide tesszük.
+- **constants.py**: Azok a konstansok, amik nem fognak változni a skript futtása alatt.
+- **preprocess.py**: Az adathalmaz feldogozásához szükséges logikát fogja tartalmazni.
+- **display.py**: Ha vizualizációs módban indítottuk el a skriptet, akkor ezt a modult fogja beimportálni, hogy megjelenítse a grafikonokat.
+- **interpolate.py**: Ha vizualizációs módban indítottuk a skriptet, akkor ennek a modulnak a segítségével kell, hogy előállítsa a polinomokat az aktivitásból.
+- **save.py**: Ha mentés módban indítottuk a skriptet, akkor ennek a modulnak a segítségével kell feltölteni az adatbázist.
+
+A skript a következőket csinálja, sorrendben:
+1. Beolvassa az argumentumokat. Ehhez az *initialise* modult használja. Az algumentumok alapján:
+	- összegyűjti a tanuláshoz és a teszteléshez szükséges fájlokat,
+	- azt a területet, amit elemezni kell
+	- és azokat a feature-öket, amiket használnia fog.
+- Betölti a memóriába a fájlok tartalmát. Ehhez az *preprocess* modult használja.
+- Végigmegy az összes négyzeten:
+	1. Előfeldogozza az adott négyzet adatait, amihez a *preprocess* modult használja:
+		1. Időintervallum szerint csoportosítja az adatokat.
+		- Felbontja hétköznapokra és hétvégékre, majd mindkettőn végigmegy:
+			1. Egy min-max scaler segítségével összehasonlíthatóvá teszi a feature-öket.
+			- Kiszámolja a feature-ök átlagát.
+			- Timestamp szerint rendezi az adatokat.
+	- A tanító adathalmazból kidobja az outliereket.
+	- A tanító adathalmazhoz kiszámolja az átlagos aktivitást minden időintervallumra.
+	- A tanító adathalmazhoz kiszámolja a szórást minden időintervallumra.
+	- A tesztelő adathalmazt napokra csoportosítja.
+	- Ha vizualizációs módban fut, akkor kiszámloja az átlagos és a aktiális aktivitáshoz az interpolációs polinomot az adott négyzetre, és megjeleníti azt.
+	- Ha mentés módban fut, akkor elmenti a négyzet kiszámolt adatait az adatbázisba.
+
+TODO: az adatbázis sémája
+
+#### Backend
+
+TODO
+
+#### Frontend
+
+TODO
+
+## Megvalósítás
+
+### Script
+
+TODO
+
+### Webapp
+
+TODO
+
+## Tesztelés
+
+TODO
