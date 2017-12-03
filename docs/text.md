@@ -268,7 +268,17 @@ A skript a következőket csinálja, sorrendben:
 	- Ha vizualizációs módban fut, akkor kiszámloja az átlagos és a aktiális aktivitáshoz az interpolációs polinomot az adott négyzetre, és megjeleníti azt.
 	- Ha mentés módban fut, akkor elmenti a négyzet kiszámolt adatait az adatbázisba.
 
-TODO: az adatbázis sémája
+##### Adatbázis
+
+Egy fájl alapú adatbáziskezelő rendszert választottam, mert az adatbázisnak hordozhatónak és verziókezelő alatt nyomonkövethetőnek kell lennie. A fájl alapú adatbáziskezelő rendszerek közül az SQLite a legnépszerűbb, ezért azt választottam, így biztos voltam benne, hogy a kezeléséhez találok karbantartott Python és Javascript library-t.
+
+Az adatbázis egyetlen táblát fog tartalmazni, aminek **squares** lesz a neve. Ebben a következő mezők vannak:
+- **square, integer**: Négyzet azonosító. Értéke egy 1 és 10000 közti egész szám.
+- **day, integer**: December egy napjának száma. Értéke egy 1 és 31 közti egész szám.
+- **minutes, integer**: Az adott napon az éjfél óta eltet percek száma. Értéke egy 0 és 1439 közti egész szám.
+- **mean_activity, real**: Az adott négyzethez, naphoz, időponthoz tartozó átlagos aktivitás novemberből. Egy nullánál nagyobb valós szám.
+- **standard_deviation, real**: Az adott négyzethez, naphoz, időponthoz tartozó átlagos aktivitás szórása novemberből. Egy nullánál nagyobb valós szám.
+- **actual_activity, real**: Az adott négyzethez, decemberi naphoz, időponthoz tartozó aktivitás. Egy nullánál nagyobb valós szám.
 
 #### Backend
 
