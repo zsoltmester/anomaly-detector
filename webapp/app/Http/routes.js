@@ -30,5 +30,5 @@ Route.get('/chartsquares', function * (request, response) {
 	yield response.sendView('squares', { parent })
 })
 
-Route.get('/getdataformap', 'AnomalyDetectorController.getDataForMap')
+Route.get('/getdataforsimulation', 'AnomalyDetectorController.getDataForSimulation')
 Route.get('/getdataforchart', 'AnomalyDetectorController.getDataForChart')

@@ -187,15 +187,15 @@ Az alkalmazás 3 komponensből épül fel:
 - Egy frontend komponens, ami a szimuláció és a grafikonok megjelenítésért felel.
 
 A 3 komponens kapcsolata:
-- A skript nem tud sem a backendről, sem a frontendről, ő csak az adatbázis elkészítéséért felel.
-- A backend nem tud semmit a frontendről, ő csak az script által generált adatbázis olvasásáért felel.
-- A frontend a backendtől tudja lekérdezni az neki éppen szükséges adatokat.
+- A script nem tud sem a backend-ről, sem a frontend-ről, ő csak az adatbázis elkészítéséért felel.
+- A backend nem tud semmit a frontend-ről, ő csak az script által generált adatbázis olvasásáért felel.
+- A frontend a backend-től tudja lekérdezni az neki éppen szükséges adatokat.
 
-#### Skript
+#### Script
 
-> Egy skript, ami feldolgozza az adatokat és kiszámolja az átlagos novemberi aktivitást és az aktivitás szórását minden négyzetre és minden időintervallumra (beleértve a hétvégét és a hétköznapot is). Ezen felül még kiszámolja december minden időintervallumára és minden területére az aktivitást. Az adatokat egy adatbázisba menti el.
+> Egy script, ami feldolgozza az adatokat és kiszámolja az átlagos novemberi aktivitást és az aktivitás szórását minden négyzetre és minden időintervallumra (beleértve a hétvégét és a hétköznapot is). Ezen felül még kiszámolja december minden időintervallumára és minden területére az aktivitást. Az adatokat egy adatbázisba menti el.
 
-Ez egy Python skript lesz. Azért a Python-t választottam, mert:
+Ez egy Python script lesz. Azért a Python-t választottam, mert:
 - népszerű nyelv a közösség körében a mesterséges tanulásos algoritmusokhoz és alkalmazásokhoz, így az interneten könnyen találhatok választ a kérdéseimre.
 - a *NumPy* és *scikit-learn* library-kre tudok támaszkodni, ha mesterséges tanulással kapcsolatos algoritmust akarok futtatni.
 
@@ -213,11 +213,11 @@ A következő paraméterekkel lehet inicializálni az algoritmust:
 -f {sms-in,sms-out,call-in,call-out,internet} [{sms-in,sms-out,call-in,call-out,internet} ...], --features {sms-in,sms-out,call-in,call-out,internet} [{sms-in,sms-out,call-in,call-out,internet} ...]
 					  Which features to use to generate the activities. Also, comma separated values are valid, which means it will combine the given features. By default, it combines all the features.
 ```
-A két féle futási mód a vizualizáció és a mentés. Az előbbi tesztelésre lesz hasznos, az utóbbi pedig magának a skriptnek a célja.
+A két féle futási mód a vizualizáció és a mentés. Az előbbi tesztelésre lesz hasznos, az utóbbi pedig magának a script-nek a célja.
 A *--square_from* és a *--square_to* kapcsolók azért fognak kelleni, hogy kevesebb memóriával rendelkező gépeken is tudjon futni a script. A scriptnek azért lesz nagy a memória igénye, mert be kell olvasnia 20 GB szöveges fájlt és a memóriába kell addig tartania, még fel nem dolgozza azokat.
 A *--features* kapcsoló teszteléshez lesz hasznos. De a végleges adatbázis legeneráláshoz nem kell használni, hisz ott az összes feature-ből szeretnénk legenerálni az aktivitást.
 
-A skript az *Adathalmaz* fejezetben leírt adatfájlokból dolgozik. Ezeket a fájlokat el kell helyezni egy-egy mappában, az egyikben a novemberiket, egy másikban a decemberiket. Például így:
+A script az *Adathalmaz* fejezetben leírt adatfájlokból dolgozik. Ezeket a fájlokat el kell helyezni egy-egy mappában, az egyikben a novemberiket, egy másikban a decemberiket. Például így:
 ```
 zsmester@thinkpad:~/big-data-repository/milano/cdr$ tree
 .
@@ -236,19 +236,19 @@ zsmester@thinkpad:~/big-data-repository/milano/cdr$ tree
 
 2 directories, 61 files
 ```
-A skriptnek ezeknek a mappáknak relatív vagy abszolút útvonalát kell megadni a *--training* és a *--testing* kapcsolók segítségével.
+A script-nek ezeknek a mappáknak relatív vagy abszolút útvonalát kell megadni a *--training* és a *--testing* kapcsolók segítségével.
 
 A scriptet fel lehet osztani funkciók mentén különböző modulokra:
 - **detect_anomaly.py**: Ez a belépési pont. Ezt kell elindítani az előbb írt argumentumokkal.
 - **initialise.py**: Tartalmazza az inicializáláshoz szükséges logikát, mint például az argumentumok beolvasása.
 - **common_function.py**: Biztosan lesz pár olyan függvény, amit több modulból is szeretnénk hívni, de nem tartozik egyikhez sem, mert azoknál általánosabb (például egy sor hozzáadása egy mátrixhoz), akkor azokat ide tesszük.
-- **constants.py**: Azok a konstansok, amik nem fognak változni a skript futtása alatt.
+- **constants.py**: Azok a konstansok, amik nem fognak változni a script futtása alatt.
 - **preprocess.py**: Az adathalmaz feldogozásához szükséges logikát fogja tartalmazni.
-- **display.py**: Ha vizualizációs módban indítottuk el a skriptet, akkor ezt a modult fogja beimportálni, hogy megjelenítse a grafikonokat.
-- **interpolate.py**: Ha vizualizációs módban indítottuk a skriptet, akkor ennek a modulnak a segítségével kell, hogy előállítsa a polinomokat az aktivitásból.
-- **save.py**: Ha mentés módban indítottuk a skriptet, akkor ennek a modulnak a segítségével kell feltölteni az adatbázist.
+- **display.py**: Ha vizualizációs módban indítottuk el a script-et, akkor ezt a modult fogja beimportálni, hogy megjelenítse a grafikonokat.
+- **interpolate.py**: Ha vizualizációs módban indítottuk a script-et, akkor ennek a modulnak a segítségével kell, hogy előállítsa a polinomokat az aktivitásból.
+- **save.py**: Ha mentés módban indítottuk a script-et, akkor ennek a modulnak a segítségével kell feltölteni az adatbázist.
 
-A skript a következőket csinálja, sorrendben:
+A script a következőket csinálja, sorrendben:
 1. Beolvassa az argumentumokat. Ehhez az *initialise* modult használja. Az algumentumok alapján:
 	- összegyűjti a tanuláshoz és a teszteléshez szükséges fájlokat,
 	- azt a területet, amit elemezni kell
@@ -280,11 +280,46 @@ Az adatbázis egyetlen táblát fog tartalmazni, aminek **squares** lesz a neve.
 - **standard_deviation, real**: Az adott négyzethez, naphoz, időponthoz tartozó átlagos aktivitás szórása novemberből. Egy nullánál nagyobb valós szám.
 - **actual_activity, real**: Az adott négyzethez, decemberi naphoz, időponthoz tartozó aktivitás. Egy nullánál nagyobb valós szám.
 
-#### Backend
+#### Webapp
 
-TODO
+Node.js alapon fog elkészülni a webalkalmazás, amit azért választottam, mert:
+- elég népszerű ahhoz, hogy a kapcsolódó kérdéseimre választ találjak az interneten.
+- sok web framework (például a legnépszerűbb, az Express) közül választhatom ki a legmegfelelőbbet az alkalmazáshoz.
 
-#### Frontend
+Web framework-nek az AdonisJs-t fogom használni, mert kellően stabil és egyszerű egy ekkora alkalmazáshoz.
+
+A webalkalmazásnak az lesz a feladata, hogy az adatbázist felhasználva tudja a szimulációt futtani és a grafikonokat kirajzolni.
+
+##### Backend
+
+A backend az előre kapott SQLite adatbázishoz tud hozzáférni és kiolvasni belőle az adatokat. Az SQLite adatbázis kezelését az AdonisJs is támogatja. Az adatbázis sémájáról a skript megoldási tervénél írtam. Arra fel kell készülni, hogy ez az adatbázis akár több GB is lehet. Viszont a feladat prezentáló jellege miatt pár másodperces várakozási idő megengedhető.
+
+A kérést kiszolgáló controller az *AnomalyDetectorController* lesz. Ezt 2 HTTP GET kéréssel lehet elérni:
+- **/getdataforsimulation**: Szimulációs módnál fogja hívni a frontend. Az *AnomalyDetectorController.getDataForSimulation(request, response)* metódus kezeli le a hívást.
+A kérés paraméterei:
+	- **squares**: Négyzet azonosítók, vesszővel elválasztva. Az azonosítók 1 és 10000 közti egész számok.
+	- **day**: December egy napjának a száma. 1 és 31 közti egész szám.
+	- **hour**: Az időpont első fele, az óra.  0 és 23 közti egész szám.
+	- **minute**: Az időpont második fele, a perc. 0 és 59 közti egész szám.
+A metódus lekéri az adatbázisból azokat a négyzeteket, amiknek az azonosítója szerepel a paraméterként kapottak közt és az időpont is egyezik. A sorok következő mezőit küldi vissza: *square*, *mean_activity*, *actual_activity*, *standard_deviation*. A választ JSON formájában kapja meg a kliens. Például válasz:
+```json
+[
+	{
+		square: 5535,
+		mean_activity: 0.0833442014201,
+		actual_activity: 0.112538050238,
+		standard_deviation: 0.0342322566198
+	},
+	...
+]
+```
+- */getdataforchart*: Grafikon elemző módnál fogja hívni a frontend. Az *AnomalyDetectorController.getDataForChart(request, response)* metódus dolgozza fel a kérést.
+A paraméterei:
+	- **square**: Négyzet azonosító. 1 és 10000 közti egész szám.
+	- **day**: December egy napjának a száma. 1 és 31 közti egész szám.
+A metódus lekéri az adatbázisból az adott négyzethez tartozó összes adatot az adott napra. A sorok következő mezőit küldi vissza: *minutes*, *mean_activity*, *actual_activity*, *standard_deviation*. A választ JSON formájában kapja meg a kliens, hasonlóan a */getdataforsimulation* kéréshez.
+
+##### Frontend
 
 TODO
 
@@ -311,7 +346,7 @@ A végleges forráskódra nem ír hibát.
 - *scipy*: Az interplációs függvényekhez.
 
 A megoldási tervenek megfelelően készítettem el a következő modulokat (kiemelve a fontosabb függvényiket a dokumentációjukkal együtt):
-- **detect_anomaly.py**: A megoldási tervnek megfelelően ez a belépési pont, a skript csak akkor fut, ha konkréten ez a file lett futtatva, és nem csak importálva: `if __name__ == '__main__':`.
+- **detect_anomaly.py**: A megoldási tervnek megfelelően ez a belépési pont, a script csak akkor fut, ha konkréten ez a file lett futtatva, és nem csak importálva: `if __name__ == '__main__':`.
 - **initialise.py**
 ```python
 def initialise():
@@ -387,11 +422,11 @@ def write_square_to_database(square, mean_activities, actual_activities, standar
 ```
 
 A forráskód docstring-ek segítségével dokumentálva van, amiből HTML dokumentációt a *Sphinx*-el lehet generálni. Az *algoritm/docs* könyvtárban egy *make html* parancsot futtatva a *_build/html* könyvtárba generálódik le a HTML dokumentáció, ami így néz ki:
-![A skript dokumentációjánk a főoldala.](script-docs-main.png)
+![A script dokumentációjánk a főoldala.](script-docs-main.png)
 ![Skipt dokumentáció - preprocess.](script-docs-preprocess.png)
 ![Skipt dokumentáció - preprocess - drop_outliers().](script-docs-preprocess-drop_outliers.png)
 
-A skriptet a megoldási tervben leírt paraméterekkel lehet futtatni. Az *algorithm* mappában található egy *run-anomaly-detector.sh* bash skript, amit az *erdos.inf.elte.hu* szerveren használtam az adatbázis legenerálásához. 10 menetben készítettem el a teljes adatbázist, hogy ne foglaljam le a szerver összes memóriáját a futás alatt:
+A script-et a megoldási tervben leírt paraméterekkel lehet futtatni. Az *algorithm* mappában található egy *run-anomaly-detector.sh* bash script, amit az *erdos.inf.elte.hu* szerveren használtam az adatbázis legenerálásához. 10 menetben készítettem el a teljes adatbázist, hogy ne foglaljam le a szerver összes memóriáját a futás alatt:
 ```bash
 # ...
 python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --square_from 2000 --square_to 2999 --action save > log3000.txt 2>&1
@@ -400,11 +435,13 @@ python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november
 A végleges adatbázis 1.9 GB lett.
 
 Az algoritmus tesztelésére használható a *visualize* mód, például így: `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square_from 1 --square_to 1 --action visualize`:
-![Skript - vizualizációs mód teszteléshez.](script-visualize.png)
+![Script - vizualizációs mód teszteléshez.](script-visualize.png)
 
 ### Webapp
 
 TODO
+
+Package mangernek a Node.js rendszerét, az *npm*-et használtam. A *webapp/package.json*-ben találhatók a külső függőségek, amiket az *npm install* parancsal lehet a *webapp/node_modules* mappába feltelepíteni.
 
 ## Tesztelés
 

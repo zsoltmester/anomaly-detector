@@ -5,7 +5,7 @@ const Database = use('Database')
 class AnomalyDetectorController {
 
 	*
-	getDataForMap(request, response) {
+	getDataForSimulation(request, response) {
 
 		var squares = request.input('squares').split(',')
 		var day = request.input('day')

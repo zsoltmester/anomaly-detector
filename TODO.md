@@ -4,7 +4,6 @@
 
 - Dokumentáció
 	- Fejlesztői dokumentáció / Megoldási terv megírása
-		- Backend
 		- Frontend
 	- Fejlesztői dokumentáció / Megvalósítás megírása
 		- Webapp

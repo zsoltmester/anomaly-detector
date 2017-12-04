@@ -167,7 +167,7 @@ function downloadData() {
         Promise.resolve(
 
                 $.ajax({
-                    url: '/getdataformap',
+                    url: '/getdataforsimulation',
                     method: 'GET',
                     data: {
                         'squares': squaresIds,
@@ -208,7 +208,7 @@ function downloadData() {
                     return
                 }
 
-                console.log('Error while accessing getdataformap service: ')
+                console.log('Error while accessing getdataforsimulation service: ')
                 console.log(error)
                 onControlButtonClick()
                 infoText.text('Something unexpected happened.')
