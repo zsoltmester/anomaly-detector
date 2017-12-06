@@ -321,6 +321,85 @@ A metódus lekéri az adatbázisból az adott négyzethez tartozó összes adato
 
 ##### Frontend
 
+A frontend felelős a felhasználói felület megjelenítéséért. A következő oldalakat kezeli:
+- **Szimulációs**: A **/** útvonalon érhető el, tehát ez a kezdőoldal. Itt lehet majd szimuláció futtatni.
+- **Grafikon elemző**: A **/charts** útvonalon érhető el. A szimuláció oldalról lehet ide jönni. Itt lehet majd grafikonokat kirajzolni.
+- **Terület választó**: A **/mapsquares** és a **/chartsquares** útvonalon érhető el. A szimulációs és a grafikon elemző oldalról lehet idejutni. Itt lehet majd területet kiválasztani.
+
+###### Szimulációs oldal
+
+A szimulációs oldal egészét egy térkép foglalja el. A bal oldalon, áttetsző fehér háttér felett van a menü, a tartalma középre igazítva a következő, sorrendben:
+- Gomb, ami a grafikon elemző oldalra visz. Szövege: *CHECK THE CHARTS*.
+- Gomb, ami a terület kiválasztó oldalra visz. Szövege: *SELECT THE SQUARES*.
+- Sor, ahol az időpontot lehet kiválasztani. A sorban a következők vannak, sorrendben:
+	- Szöveg: *2013 december*.
+	- *Select* komponens, ahol kiválaszthatjuk december egy napját, azaz egy 1 és 31 közti egész számot. A kezdőértéke 1.
+	- *Select* komponens, ahol kiválaszthatjuk az órát, azaz egy 0 és 23 közti egész számot. A kezdőértéke 0.
+	- *Select* komponens, ahol kiválaszthatjuk a percet. Értéke 00, 10, 20, 30, 40 vagy 50 lehet. A kezdőértéke 10. Ha a nap 1 és az óra 0, akkor a perc értéke nem lehet 00.
+- Szöveg: *Based on the data from the last 10 minutes.*.
+- Gomb, amivel a szimuláció futtatható. Zöld és a felirata *RUN*. Ha fut a szimuláció, akkor piros és a felirata *STOP*.
+- Kék információ szöveg, ami kezdetben üres, utána a következő értékeket veheti fel: *Loading the map...*, *Processing data...*, *Waiting for the next pack of data...*, *Something unexpected happened.*.
+
+A szimuláció menete:
+1. Kiválasztjuk a területet, ami 2 féleképpen történhet:
+	1. A felhasználó rákattint a terület kiválasztó gombra, ami a terület kiválasztó oldalra visz. Lentebb lesz leírás arról, hogy lehet területet kiválasztani. Ha kiválasztotta a területet, akkor ezt cookie-ba elmentjük. Fontos, hogy a kiválasztott területet mind szimuláció, mind grafikon esetén cookie-ba mentjük. A felhasználó visszanavigál a szimulációs oldalra.
+	2. Cookie-ból betültjük a területet.
+- Kiválasztjuk az időpontot.
+- A *RUN* gombbal indítjuk a szimulációt. A gombot pirosra színezzük és a feliratát *STOP*-ra változtatjuk.
+- Betöltjük a négyzeteket. Az információs szöveget erre frissítjük: *Loading the map...*.
+- Letöltjük a backendről a kiválasztott időpontnak és területnek megfelelő adatokat. A backendnek a *getdataforsimulation* szolgáltatását hívjuk meg. Közben az információs szöveget erre frissítjük: *Processing data...*. A letöltés ideje alatt fehér négyzetek lesznek láthatóak a térképen, a kijelölt terület helyén. A négyzetek kattinthatók, amire egy információs ablakot jelenítenek meg. Egyszerre csak 1 ablak lehet aktív. Az ablakban a következő szöveg van, ha még nem tölöttük le hozzá az adatot:
+```
+Square: {...}
+Time: day {...}, at {...}:{...}
+No data available yet.
+```
+- A letöltés után minden négyzethez kiszámolunk egy értéket ami az anomália valószínűségét fogja reprezentálni: `|novemberi_átlagos_aktivitás - aktuális_aktivitás| / (2 * squareData.novemberi_átlagos_aktivitás_szórása + konstans)`, ahol a konstans értéke az 0.01.
+- Megjelenítjük a letöltött adatokat. Az információs ablakokban kattintás után a következőket írjuk ki:
+```
+Square: {...}
+Time: day {...}, at {...}:{...}
+Anomaly probability: {...}
+Actual activity: {...}
+Mean activity in November: {...}
+Activity standard deviation in November: {...}
+```
+- Az anomália valószínűségének megfelelően megváltoztatjuk a square színét teljesen áttetsző piros és tömör piros közt.
+- Várunk 5 másodpercet. Közben az információs szöveget erre frissítjük: *Waiting for the next pack of data...*.
+
+A szimuláció futása alatt az időpont kiválasztó select komponensek kikapcsolt állapotban vannak. Hiba esetén erre frissítjük az információs szöveget: *Something unexpected happened.*. Hiba esetén vagy a szimuláció befejeztével a gombot zöldre színezzük és a feliratát *RUN*-ra változtatjuk.
+
+A Google térképét választottam, mert:
+- támogatja azokat a funkciókat, amiket használni fogunk (térkép mozgatása, nagyítása, négyzetek megjelenítése, színezése, négyzetekhez ablakok feldobása)
+- és a jó dokumentációja megkönnyíti a használatát.
+
+###### Grafikon elemző oldal
+
+Az grafikon elemző bal oldalán, fehér háttér felett van a menü, a tartalma középre igazítva a következő, sorrendben:
+- Gomb, ami a szimulációs oldalra visz. Szövege: *CHECK THE MAP*.
+- Gomb, ami a terület kiválasztó oldalra visz. Szövege: *SELECT THE SQUARES*.
+- Sor, ahol az időpontot lehet kiválasztani. A sorban a következők vannak, sorrendben:
+	- Szöveg: *2013 december*.
+	- *Select* komponens, ahol kiválaszthatjuk december egy napját, azaz egy 1 és 31 közti egész számot. A kezdőértéke 1.
+- Szöveg: *Based on the data of the selected day.*.
+- Gomb, amivel a grafikon kirajzolható. Zöld és a felirata *SHOW*.
+- Kék információ szöveg, ami kezdetben üres, utána a következő értékeket veheti fel: *Processing data...*, *Something unexpected happened.*.
+
+A grafikon kirajzolásának menete:
+1. Kiválasztjuk a területet, ami 2 féleképpen történhet, úgyanúgy, mint ahogy a szimulációs oldalnál le van írva.
+- Kiválasztjuk a napot.
+- Megnyomjuk a *SHOW* gombot. Ekkor az információs szöveg erre változik: *Processing data...*. Letöltjük a backendről a kiválasztott időpontnak és területnek megfelelő adatokat. A backendnek a *getdataforchart* szolgáltatására hívunk be.
+- Ha megérkezett az adat, az információs szöveget töröljük. Kirajzoljuk a grafikont, a következő vonalakkal:
+	- Az átlagos aktivitást az adott nap. Narancs színű.
+	- A novemberi átlagos aktivitást. Fekete színű.
+	- A novemberi átlagos aktivitás és a novmberi átlagos aktivitás szórásának az összegét. Szürke színű.
+	- A novemberi átlagos aktivitás és a novmberi átlagos aktivitás szórásának a különbségét. Szintén szürke színű.
+
+Amint betöltődött az oldal, elkezdjük kirajzolni a grafikont.
+
+Grafikon kirajzolására a Chart.js-t fogom használni, mert ez volt a legnépszerűbb library a közösség körében erre a feladatra.
+
+###### Terület kiválasztó oldal
+
 TODO
 
 ## Megvalósítás
