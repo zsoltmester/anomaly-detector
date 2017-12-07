@@ -526,6 +526,7 @@ A forráskód docstring-ek segítségével dokumentálva van, amiből HTML dokum
 A script-et a megoldási tervben leírt paraméterekkel lehet futtatni. Az *algorithm* mappában található egy *run-anomaly-detector.sh* bash script, amit az *erdos.inf.elte.hu* szerveren használtam az adatbázis legenerálásához. 10 menetben készítettem el a teljes adatbázist, hogy ne foglaljam le a szerver összes memóriáját a futás alatt:
 ```bash
 # ...
+TODO
 python3 detect_anomaly.py --training /mnt/disk2/tim-bd-challenge/milano-november/ --testing /mnt/disk2/tim-bd-challenge/milano-december/ --square_from 2000 --square_to 2999 --action save > log3000.txt 2>&1
 # ...
 ```
@@ -536,9 +537,21 @@ Az algoritmus tesztelésére használható a *visualize* mód, például így: `
 
 ### Webapp
 
-TODO
+A webalkalmazás a megoldási tervnek megfelelően Node.js és AdonisJs alapon készült el. Package managernek a Node.js rendszerét, az *npm*-et használtam. A *webapp/package.json*-ben találhatók a külső függőségek, amiket az *npm install* parancsal lehet a *webapp/node_modules* mappába feltelepíteni.
 
-Package mangernek a Node.js rendszerét, az *npm*-et használtam. A *webapp/package.json*-ben találhatók a külső függőségek, amiket az *npm install* parancsal lehet a *webapp/node_modules* mappába feltelepíteni.
+A környezet konfiguráláshoz egy *.env* fájlt szükséges elhelyezni a *webapp* mappába. Egy minta a *webapp/.env.example*. A következőket érdemes benne bekonfigurálni:
+- **HOST**: A cím, ahol a szervert indítani fogja. Ha lokálisan szeretnénk futtatni a webappot akkor ez *localhost* legyen.
+- **PORT**: A cím portja, ahol a szervert indítani fogja.
+- **APP_KEY**: A cookie-k titkosításához szükséges. A *webapp* mappában futtatott *./ace generate:key* parancsal generálható.
+- **NODE_ENV**: Fejlesztés esetén *development*, éles app esetén *production*.
+- **CACHE_VIEWS**: Éles app esetén természetesen ennek az értéke *true*, a fejlesztést viszont megkönnyíti, ha debugolásnál nem kell azzal törődni, hogy az adott view tényleg a legfrissebb-e.
+- **DB_CONNECTION**: Az adatbázis típusa. Esetünkben ez *sqlite*.
+
+Az adatbázis bekötéséhez a script segítségével legenerált adatbázist *processed_data.sqlite* néven a *webapp/database* mappába kell tenni.
+
+A webalkalmazás futtatásához a webapp mappában kell kiadni a következő parancsot
+- fejlesztéshez: *npm run serve:dev*,
+- és éles applikációhoz: *npm run serve*.
 
 ## Tesztelés
 

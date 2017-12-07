@@ -3,10 +3,6 @@
 # Tasks
 
 - Dokumentáció
-	- Fejlesztői dokumentáció / Megoldási terv megírása
-		- Frontend
-	- Fejlesztői dokumentáció / Megvalósítás megírása
-		- Webapp
 	- Fejlesztői dokumentáció / Tesztelés megírása
 	- Word-be áttenni a megírt szöveget és az elvárt formai követelmények szerint megformázni
 	- Legkésőbb december 11 délelőtt elküldeni a konzulensnek
