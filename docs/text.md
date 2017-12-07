@@ -326,6 +326,8 @@ A frontend felelős a felhasználói felület megjelenítéséért. A következ�
 - **Grafikon elemző**: A **/charts** útvonalon érhető el. A szimuláció oldalról lehet ide jönni. Itt lehet majd grafikonokat kirajzolni.
 - **Terület választó**: A **/mapsquares** és a **/chartsquares** útvonalon érhető el. A szimulációs és a grafikon elemző oldalról lehet idejutni. Itt lehet majd területet kiválasztani.
 
+A HTML generáláshoz Nunjucks template-eket használok. A közös HTML keretet a *base.njk* tartalmazza, a közös stíluselemeket a *style.css*.
+
 ###### Szimulációs oldal
 
 A szimulációs oldal egészét egy térkép foglalja el. A bal oldalon, áttetsző fehér háttér felett van a menü, a tartalma középre igazítva a következő, sorrendben:
@@ -372,6 +374,8 @@ A Google térképét választottam, mert:
 - támogatja azokat a funkciókat, amiket használni fogunk (térkép mozgatása, nagyítása, négyzetek megjelenítése, színezése, négyzetekhez ablakok feldobása)
 - és a jó dokumentációja megkönnyíti a használatát.
 
+A HTML generáláshoz használt Nunjucks template a *main.njk*. Ez kibővíti a *base.njk*-t. A logika a *main.js*-ben található.
+
 ###### Grafikon elemző oldal
 
 Az grafikon elemző bal oldalán, fehér háttér felett van a menü, a tartalma középre igazítva a következő, sorrendben:
@@ -398,9 +402,23 @@ Amint betöltődött az oldal, elkezdjük kirajzolni a grafikont.
 
 Grafikon kirajzolására a Chart.js-t fogom használni, mert ez volt a legnépszerűbb library a közösség körében erre a feladatra.
 
+A HTML generáláshoz használt Nunjucks template a *charts.njk*. Ez kibővíti a *base.njk*-t. A logika a *charts.js*-ben található.
+
 ###### Terület kiválasztó oldal
 
-TODO
+A terület kiválasztó oldal egészét egy térkép foglalja el. A térkép kezdetben Milánót mutatja úgy, hogy az egész város látszódjon. A térképen megjelennek az adathalmazban definiált négyzetek, mind a 10000:
+![A kiválasztható négyzetek Milánó felett.](milano-grid.png)
+A négyzetek félig átlátszó feketével vannak színezve. A kiválasztott négyzetek félig átlátszó pirossal.
+
+2 féleképpen jöhetünk ide és jelölhetjük ki a területet:
+- Ha a szimulációs oldalról (a */mapsquares*-en keresztül) jövünk ide, akkor egy négyzetet úgy lehet kijelölni, hogy rákattintunk. Szintén így lehet a jelölést levenni egy már kijelölt négyzetről. Ebben a módban bármennyi négyzetet kijelölhetünk. Legalább egy négyzetnek kiválasztva kell lennie. Ezért ha az utolsó kiválasztott négyzetre rákattint, akkor nem történik semmi.
+- Ha a grafikon elemző oldalról (a */chartsquares*-en keresztül) jövünk ide, akkor egyszerre csak 1 négyzet lehet kijelölve. Mindig az a négyzet van kijelölve, amire utoljára kattintottunk.
+
+Minden egyes kijelölés, vagy kijelölés megszüntetése után elmentjük az aktuális kijelölt négyzeteket cookie-ba, szimulációs mód esetén *selected_squares_for_map* azonosítóval, grafikon elemző esetén *selected_squares_for_chart* azonosítóval.
+
+A HTML generáláshoz használt Nunjucks template a *squares.njk*. Ez kibővíti a *base.njk*-t. A logika a *squares.js*-ben található.
+
+A cookie kezeléssel kapcsolatos logika a *cookies.js*-ben található. Ez a *js-cookie* külső library-t használja.
 
 ## Megvalósítás
 
