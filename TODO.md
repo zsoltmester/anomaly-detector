@@ -4,7 +4,6 @@
 
 - Dokumentáció
 	- Fejlesztői dokumentáció / Tesztelés megírása
-	- Word-be áttenni a megírt szöveget és az elvárt formai követelmények szerint megformázni
 	- Legkésőbb december 11 délelőtt elküldeni a konzulensnek
 	- Fejleszteni a doksit az alapján, amit a konzulens mond
 	- Visszaküldeni a konzulensnek egy végső validálásra
@@ -32,7 +31,3 @@ December 28, 2013 20:00:00
 December 31, 2013 18:00:00
 
 The Feast of St. Ambrose: http://www.hotelwindsormilan.com/en/the-feast-of-st-ambrose-patron-of-milan/
-
-### Futtatási példák
-
-- `npm run serve:dev` (development), `npm run serve` (production)
