@@ -7,7 +7,6 @@
         - Írni a manuális tesztelésről
         - Írni a felület teszteléséről. Általában 1-2 oldal szokott lenni táblázatos formában vagy listába szedve
     - Összefoglaló fejezet, amiben a továbbfejlesztési lehetőségekről is lehetne írni
-    - Az ábrák is legyenek sorszámozva és legyen rövid felirat alattuk. Ezekre is legyen hivatkozás a szövegből
 	- Visszaküldeni a konzulensnek egy végső validálásra
 - (waiting) Beköttetni a szakdolgozatot és összegyűjteni a leadáshoz szükséges dokumentumokat
 - (waiting) December 15-ig le kell adnom
