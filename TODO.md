@@ -3,7 +3,6 @@
 # Tasks
 
 - Dokumentáció
-    - A fejlesztői rész elejére egy rendszer-szintű ábrát tenni, amin látszik, hogy a nyers adatoktól miként jutunk el a megjelenítésig, stb
 	- Fejlesztői dokumentáció / Tesztelés megírása
         - Írni a manuális tesztelésről
         - Írni a felület teszteléséről. Általában 1-2 oldal szokott lenni táblázatos formában vagy listába szedve
