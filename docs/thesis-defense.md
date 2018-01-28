@@ -1,0 +1,22 @@
+# Védés
+
+- CDR
+- Az adathalmaz bemutatása:
+	- https://dandelion.eu/datamine/open-big-data/
+	- `~/big-data-repository/milano/cdr`: `du`
+	- `less 2013-11/sms-call-internet-mi-2013-11-01.txt`
+- Webapp:
+	- `~/anomaly-detector/webapp`: `npm run serve:dev`
+	- Példák:
+		- `https://en.wikipedia.org/wiki/2013%E2%80%9314_Inter_Milan_season`
+		- Térképen: December 1., 15:00: Inter – Sampdoria, 14:50-től 15:20-ig, majd 17:00 és 18:00
+		- Területkiválasztó bemutatása a jobb felső oldalon lévő park 2 középső négyzetével 23:00-kor
+		- Grafikonon: Kezdőállapotban, majd December 8. és 22.
+	- Kódrészletek
+- Algoritmus:
+	- Thesis / 19.
+	- `~/anomaly-detector/algorithm`
+	- `python detect_anomaly.py -h`
+	- `python detect_anomaly.py --training ~/big-data-repository/milano/cdr/2013-11 --testing ~/big-data-repository/milano/cdr/2013-12 --square_from 1 --square_to 1 --action visualize`
+	- Kódrészletek
+	- API doc generálás: `~/anomaly-detector/algorithm/docs`: `make html`
